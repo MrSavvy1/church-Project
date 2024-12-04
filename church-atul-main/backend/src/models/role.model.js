@@ -1,6 +1,6 @@
 const mongoose = require('mongoose');
 
-const rolechema = new mongoose.Schema({
+const roleSchema = new mongoose.Schema({
     userId: {
         type: mongoose.Schema.Types.ObjectId,
         ref: "User"
@@ -14,9 +14,9 @@ const rolechema = new mongoose.Schema({
             },
         }
     ],
-    churchPermission: Boolean,
-    notificationPermission: Boolean,
-    transactionPermission: Boolean,
+    churchPermission: { type: Boolean, default: false },
+    notificationPermission: { type: Boolean, default: false },
+    transactionPermission: { type: Boolean, default: false }
 });
 
-module.exports = mongoose.model('Role', rolechema);
+module.exports = mongoose.model('Role', roleSchema);

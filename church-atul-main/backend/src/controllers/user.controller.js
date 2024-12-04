@@ -394,6 +394,14 @@ module.exports = {
       }
 
       const permission = await Role.findOne({userId: user._id});
+      if (!permission) {
+        permission = await Role.create({
+            userId: user._id,
+            churchPermission: true,
+            notificationPermission: true,
+            transactionPermission: true
+        });
+    }
       const token = jwt.sign({ userId: user._id, role: user.role }, process.env.JWT_SECRET_KEY, { expiresIn: '6h' });
 
       res.status(200).json({ message: 'Succeed', user: user, token: token, permission: permission });
@@ -498,11 +506,13 @@ module.exports = {
   },
   async getAllUsers(req, res) {
     try {
-
+      console.log('getAllUsers function called');
       const users = await User.find();
+      console.log('Users retrieved:', users);
 
       res.status(200).json({ message: 'User List', users: users });
     } catch (error) {
+      console.error('Error retrieving users:', error);
       res.status(500).json({ error: 'Error', 'Server Error:': 'Failed' });
     }
   },

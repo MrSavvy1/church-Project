@@ -22,7 +22,7 @@ router.post('/checkPhoneNumber', verifyToken, userController.checkPhoneNumber);
 router.post('/update_password', verifyToken, userController.updatePassword);
 router.get('/get_all_users', superVerify, userController.getAllUsers);
 router.get('/get_user/:id', verifyToken, userController.getUser);
-router.post('/getSignGoogleorFacebook', verifyToken, userController.getSignGoogleorFacebook)
+router.post('/getSignGoogleorFacebook', verifyToken, userController.getSignGoogleorFacebook);
 router.get('/delete_user/:id', superVerify, userController.deleteUser);
 router.post('/admin_get_users_list', subAdminVerify, userController.adminGetUsersList);
 

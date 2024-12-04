@@ -4,7 +4,6 @@ const bodyParser = require('body-parser');
 const dotenv = require('dotenv');
 dotenv.config();
 const cors = require('cors');
-const fs = require('fs');
 const multer = require('multer');
 
 const storage = multer.diskStorage({
@@ -36,14 +35,15 @@ db.once('open', () => {
     console.log('Connected to MongoDB');
 });
 
-// Routes
-app.use('/accounts', require('./routes/user.routes'));
-app.use('/church', require('./routes/church.routes'));
-app.use('/notifications', require('./routes/notification.routes'));
-app.use('/transaction', require('./routes/payment.routes'));
-app.use('/role', require('./routes/role.routes'));
+// Example route for the root URL
+app.get('/', (req, res) => {
+    res.status(200).send('Hello, World!');
+});
 
+// Serve static files from the 'uploads' directory
 app.use('/uploads', express.static('uploads'));
+
+// Route for image upload
 app.post('/upload', upload.single('image'), (req, res) => {
     console.log('Image received:', req.file.originalname);
     let filename = req.file.originalname;
@@ -51,8 +51,22 @@ app.post('/upload', upload.single('image'), (req, res) => {
     res.status(200).json({ message: 'Image uploaded', path: `https://monegliseci.com/uploads/${filename}` });
 });
 
+// Import routes
+const userRoutes = require('./routes/user.routes');
+const churchRoutes = require('./routes/church.routes');
+const notificationRoutes = require('./routes/notification.routes');
+const paymentRoutes = require('./routes/payment.routes');
+const roleRoutes = require('./routes/role.routes');
+
+// Use routes
+app.use('/api/accounts', userRoutes);
+app.use('/api/church', churchRoutes);
+app.use('/api/notifications', notificationRoutes);
+app.use('/api/transaction', paymentRoutes);
+app.use('/api/role', roleRoutes);
+
 // Start the server
-const PORT = process.env.PORT || 3000;
+const PORT = process.env.PORT || 5000;
 app.listen(PORT, () => {
     console.log(`Server is running on port ${PORT}`);
 });
