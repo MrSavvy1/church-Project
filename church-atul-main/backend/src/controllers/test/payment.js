@@ -1,4 +1,4 @@
-const PaymentService = require('../../services/payment.service');
+const PaymentService = require('../services/payment.service');
 
 const paymentInstance = new PaymentService();
 
