@@ -9,8 +9,13 @@ module.exports = {
         try {
             const { userId, churchId, amount, type, projectId } = req.body;
 
-            console.log(userId, churchId, amount, type, projectId)
-
+            console.log('userId controller:', userId);
+            console.log('churchId controller:', churchId);
+            console.log('email:', email);
+            console.log('amount:', amount);
+            console.log('type:', type);
+            console.log('projectId:', projectId);
+           
             const newTransaction = await Transaction.create({
                 userId: userId,
                 churchId: churchId,
