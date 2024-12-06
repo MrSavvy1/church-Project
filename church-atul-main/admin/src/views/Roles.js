@@ -28,7 +28,7 @@ const RolesPage = () => {
         setManagers(response.data.managers)
       })
       .catch(function (error) {
-
+        console.error(error);
       });
   }
 
@@ -47,13 +47,11 @@ const RolesPage = () => {
         setChurchData(data);
       })
       .catch(function (error) {
-        console.log("------profile church------", error)
-
+        console.error(error);
       });
   }
 
   const editbutton = async (id) => {
-    
     const token = localStorage.getItem('token');
     const headers = {
       authorization: `${token}`
@@ -72,9 +70,8 @@ const RolesPage = () => {
         setEditModal(true);
       })
       .catch(function (error) {
-        console.log(error)
+        console.error(error);
       });
-      
   }
 
   const updateManager = async () => {
@@ -83,7 +80,6 @@ const RolesPage = () => {
       authorization: `${token}`
     }
 
-    console.log(selected)
     if(selected.length == 0) {
       toast.error('Please select church');
       return
@@ -99,13 +95,11 @@ const RolesPage = () => {
 
     await axios.post(`${process.env.REACT_APP_SERVER_API_URL}/api/role/update_role`,  data, { headers })
       .then(function (response) {
-        console.log(response.data);
         toast.success(response.data.message)
         setEditModal(false);
       })
       .catch(function (error) {
-        console.log("------profile church------", error)
-
+        console.error(error);
       });
   }
 
@@ -115,27 +109,24 @@ const RolesPage = () => {
     setUserId(userId)
   }
 
-const deleteManager = async () => {
-  const token = localStorage.getItem('token');
-  const headers = {
-    authorization: `${token}`
+  const deleteManager = async () => {
+    const token = localStorage.getItem('token');
+    const headers = {
+      authorization: `${token}`
+    }
+    let data ={
+      id: id,
+      userId: userId
+    }
+    await axios.post(`${process.env.REACT_APP_SERVER_API_URL}/api/role/delete_manager`, data, { headers })
+    .then(function (response) {
+      toast.success(response.data.message);
+      setDeleteModal(false);
+    })
+    .catch(function (error) {
+      console.error(error);
+    });
   }
-  let data ={
-    id: id,
-    userId: userId
-  }
-  await axios.post(`${process.env.REACT_APP_SERVER_API_URL}/api/role/delete_manager`, data, { headers })
-  .then(function (response) {
-    console.log(response.data)
-    toast.success(response.data.message);
-    setDeleteModal(false);
-  })
-  .catch(function (error) {
-    console.log("------profile church------", error)
-
-  });
-}
-
 
   useEffect(() => {
     getUserData();
@@ -147,7 +138,6 @@ const deleteManager = async () => {
     getChurchList();
   }, [editModal, deleteModal]);
 
-console.log('selected', selected);
   return (
     <Row>
       <Col>
@@ -179,53 +169,41 @@ console.log('selected', selected);
                     <td className="border">
                       <div className="d-flex align-items-center p-2">
                         <img
-                          src={tdata.userId?.avatarUrl}
+                          src={tdata.userId?.avatarUrl || ''}
                           className="rounded-circle"
                           alt="avatar"
                           width="45"
                           height="45"
                         />
                         <div className="ms-3">
-                          <h6 className="mb-0">{tdata.userId.userName}</h6>
-                          <span className="text-muted">{tdata.userId.userEmail}</span>
+                          <h6 className="mb-0">{tdata.userId?.userName || 'N/A'}</h6>
+                          <span className="text-muted">{tdata.userId?.userEmail || 'N/A'}</span>
                         </div>
                       </div>
                     </td>
-                    <td className="border text-start"><ul className="mb-0">{tdata.church.map((item) => (
-                      
-                        <li><Link to={`/admin/church_list/${item.value}`} className="nav-link text-primary">{`${item.label},`}</Link></li>
-                      
-                    ))}</ul></td>
-                    <td className="border text-center">
-                      {tdata.churchPermission == true ? <Badge color="info">YES</Badge>  : <Badge color="danger">NO</Badge>}
-                      {/* <FormGroup
-                        check
-                        inline
-                      >
-                        <Input type="checkbox" checked={tdata.churchPermission} />
-                      </FormGroup> */}
+                    <td className="border text-start">
+                      <ul className="mb-0">
+                        {tdata.church.map((item, idx) => (
+                          <li key={idx}>
+                            <Link to={`/admin/church_list/${item.value}`} className="nav-link text-primary">
+                              {`${item.label},`}
+                            </Link>
+                          </li>
+                        ))}
+                      </ul>
                     </td>
                     <td className="border text-center">
-                    {tdata.notificationPermission == true ? <Badge color="info">YES</Badge>  : <Badge color="danger">NO</Badge>}
-                      {/* <FormGroup
-                        check
-                        inline
-                      >
-                        <Input type="checkbox" checked={tdata.notificationPermission} />
-                      </FormGroup> */}
+                      {tdata.churchPermission ? <Badge color="info">YES</Badge> : <Badge color="danger">NO</Badge>}
                     </td>
                     <td className="border text-center">
-                    {tdata.transactionPermission == true ? <Badge color="info">YES</Badge>  : <Badge color="danger">NO</Badge>}
-                      {/* <FormGroup
-                        check
-                        inline
-                      >
-                        <Input type="checkbox" checked={tdata.transactionPermission} />
-                      </FormGroup> */}
+                      {tdata.notificationPermission ? <Badge color="info">YES</Badge> : <Badge color="danger">NO</Badge>}
+                    </td>
+                    <td className="border text-center">
+                      {tdata.transactionPermission ? <Badge color="info">YES</Badge> : <Badge color="danger">NO</Badge>}
                     </td>
                     <td className="border">
                       <Button color="info" className="ms-3" onClick={() => editbutton(tdata._id)}><i className='bi bi-pencil-square'></i></Button>
-                      <Button color="danger" className="ms-3" onClick={() => deletebutton(tdata._id, tdata.userId._id)}><i className='bi bi-trash'></i></Button>
+                      <Button color="danger" className="ms-3" onClick={() => deletebutton(tdata._id, tdata.userId?._id)}><i className='bi bi-trash'></i></Button>
                     </td>
                   </tr>
                 ))}
