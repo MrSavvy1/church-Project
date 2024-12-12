@@ -4,6 +4,7 @@ const jwt = require('jsonwebtoken');
 const dotenv = require('dotenv');
 dotenv.config();
 
+const nodemailer = require('nodemailer');
 const Transaction = require('../models/transaction.model');
 const Church = require('../models/church.model');
 const sendEmailController = require('../controllers/sendEmail');
@@ -144,50 +145,63 @@ module.exports = {
     }
   },
 
-  async resendVerifyCode(req, res) {
+
+async resendVerifyCode(req, res) {
     try {
-      const { useremail } = req.body;
+        const { useremail } = req.body;
 
-      const user = await User.findOne({ userEmail: useremail });
+        const user = await User.findOne({ userEmail: useremail });
 
-      console.log("user", user)
+        console.log("user", user);
 
-      if (user == null) {
-        return res.status(401).json({ message: `InvalidEmail`, error: 'Your email is not existed' });
-      }
+        if (user == null) {
+            return res.status(401).json({ message: `InvalidEmail`, error: 'Your email is not existed' });
+        }
 
-      const verifyCode = parseInt(Math.random() * 899999) + 100000;
+        const verifyCode = parseInt(Math.random() * 899999) + 100000;
 
-      const token = jwt.sign({ userId: user._id }, process.env.JWT_SECRET_KEY, { expiresIn: '6h' });
+        const token = jwt.sign({ userId: user._id }, process.env.JWT_SECRET_KEY, { expiresIn: '6h' });
 
-      //update verify code by resending function
-      await User.findByIdAndUpdate(user._id, {
-        verifyCode: verifyCode
-      });
-      //
-       // send Email to the user for checking 6 digits verify code
-       const mailTitle = "Resend verify code to your monegliseci.com account";
-       const mailText = "";
-       const mailHTML = `<h1> Hi </h1>
-                       Please enter the following verification code to verify this attempt. <br/>
-                       <h2> ${verifyCode} </h2>
-                       Don't recognize this signup attempt? 
-                       Regards,
-                       The Monegliseci Team`;
-       await sendEmailController.sendEmail(useremail, mailTitle, mailText, mailHTML);
-       //
 
-      res.status(201).json({ message: 'VerifyResent', token: token });
+        await User.findByIdAndUpdate(user._id, {
+            verifyCode: verifyCode
+        });
+
+        
+        const transporter = nodemailer.createTransport({
+            service: 'gmail',
+            auth: {
+                user: process.env.GMAIL_USER,
+                pass: process.env.GMAIL_PASS 
+            }
+        });
+
+        
+        const mailOptions = {
+            from: '"Monegliseci Team" <no-reply@monegliseci.com>', 
+            to: useremail, 
+            subject: "Resend verify code to your monegliseci.com account", 
+            html: `<h1> Hi </h1>
+                   Please enter the following verification code to verify this attempt. <br/>
+                   <h2> ${verifyCode} </h2>
+                   Don't recognize this signup attempt? 
+                   Regards,
+                   The Monegliseci Team` 
+        };
+
+        await transporter.sendMail(mailOptions);
+
+        res.status(201).json({ message: 'VerifyResent', token: token });
     } catch (error) {
-      console.log('Failed');
-      res.status(500).json({ error: 'Error', 'Server Error:': 'Failed' });
+        console.log('Failed', error);
+        res.status(500).json({ error: 'Error', 'Server Error:': 'Failed' });
     }
-  },
+},
 
   async forgotPassword(req, res) {
     try {
       const { useremail} = req.body;
-      // const user = await User.findOne({ $and: [{ userEmail: useremail }, { phoneNumber: phonenumber }] });
+      
       const user = await User.findOne({ userEmail: useremail });
 
       if (user == null) {
@@ -201,7 +215,7 @@ module.exports = {
         verifyCode: verifyCode
       });
 
-      // send Email to the user for checking 6 digits verify code
+      
       const mailTitle = "Reset password to your monegliseci.com account";
       const mailText = "";
       const mailHTML = `<h1> Hi </h1>
@@ -211,7 +225,7 @@ module.exports = {
                       Regards,
                       The Monegliseci Team`;
       await sendEmailController.sendEmail(useremail, mailTitle, mailText, mailHTML);
-      //
+     
       res.status(201).json({ message: 'VerifySent', token: token });
     } catch (error) {
       console.log('Failed', error);
@@ -223,7 +237,7 @@ module.exports = {
     try {
       const { stateEmailorPhone, phoneNumber, useremail, password} = req.body;
       console.log('password', password);
-      // const user = await User.findOne({ $and: [{ userEmail: useremail }, { phoneNumber: phonenumber }] });
+    
       let user;
       if (stateEmailorPhone == 0) {
         user = await User.findOne({ userEmail: useremail });

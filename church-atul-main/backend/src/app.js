@@ -49,7 +49,8 @@ app.post('/upload', upload.single('image'), (req, res) => {
     console.log('Image received:', req.file.originalname);
     let filename = req.file.originalname;
     // Handle image processing or storage logic here
-    res.status(200).json({ message: 'Image uploaded', path: `https://monegliseci.com/uploads/${filename}` });
+    const baseUrl = process.env.BASE_URL;
+    res.status(200).json({ message: 'Image uploaded', path: `${baseUrl}/uploads/${filename}` });
 });
 
 // Import routes

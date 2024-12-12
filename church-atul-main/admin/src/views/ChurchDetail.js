@@ -32,7 +32,7 @@ const ChurchDetail = () => {
         const formData = new FormData();
         formData.append('image', imageFile.file);
 
-        axios.post(`${process.env.REACT_APP_SERVER_API_URL}/api/upload`, formData)
+        axios.post(`${process.env.REACT_APP_SERVER_API_URL}/upload`, formData)
             .then((response) => {
                 setChurchImage(response.data.path)
                 toast.success(response.data.message)
@@ -51,7 +51,7 @@ const ChurchDetail = () => {
         const formData = new FormData();
         formData.append('image', imageFile.file);
 
-        axios.post(`${process.env.REACT_APP_SERVER_API_URL}/api/upload`, formData)
+        axios.post(`${process.env.REACT_APP_SERVER_API_URL}/upload`, formData)
             .then((response) => {
                 setProjectImage(response.data.path)
                 toast.success(response.data.message)
