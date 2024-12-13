@@ -180,7 +180,7 @@ async resendVerifyCode(req, res) {
         const mailOptions = {
             from: '"Monegliseci Team" <no-reply@monegliseci.com>', 
             to: useremail, 
-            subject: "Resend verify code to your monegliseci.com account", 
+            subject: "Verification Code", 
             html: `<h1> Hi </h1>
                    Please enter the following verification code to verify this attempt. <br/>
                    <h2> ${verifyCode} </h2>
