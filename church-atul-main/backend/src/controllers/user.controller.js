@@ -323,16 +323,16 @@ async resendVerifyCode(req, res) {
         return res.status(401).json({ message: `EnterValidEmailorPhone`, status: 'Failed' });
       }
 
-      if (!user.signupComplete) {
-        return res.status(401).json({ message: 'User needs to complete verification', error: 'Incomplete signup' });
-      }
-
       const isPasswordValid = await bcrypt.compare(password, user.password);
 
       console.log(isPasswordValid)
 
       if (!isPasswordValid) {
         return res.status(401).json({ message: 'PasswordIncorrect', status: 'Failed' });
+      }
+
+      if (!user.signupComplete) {
+        return res.status(401).json({ message: 'User needs to complete verification', error: 'Incomplete signup' });
       }
 
       const token = jwt.sign({ userId: user._id }, process.env.JWT_SECRET_KEY, { expiresIn: '6h' });
