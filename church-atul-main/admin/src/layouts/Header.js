@@ -28,7 +28,7 @@ const Header = () => {
   return (
     <Navbar color="dark" dark expand="md">
       <div className="d-flex align-items-center">
-        <NavbarBrand href="/" className="d-lg-none">
+        <NavbarBrand href="/#/admin/user_list" className="d-lg-none">
           <LogoWhite />
         </NavbarBrand>
         <Button

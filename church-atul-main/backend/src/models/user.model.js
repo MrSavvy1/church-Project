@@ -11,12 +11,14 @@ const userSchema = new mongoose.Schema({
     password: String,
     church: String,
     avatarUrl: String,
-    role : String,
+    role: String,
     status: Boolean,
     GoogleorFacebook: Boolean,
-    notifications:[
-        {notificationId : String}
-    ]
-});
+    notifications: [
+      { notificationId: String }
+    ],
+    signupComplete: { type: Boolean, default: false }, // Added field
+  });
+  
 
 module.exports = mongoose.model('User', userSchema);

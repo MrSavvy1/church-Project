@@ -102,6 +102,7 @@ module.exports = {
       }
 
       if (user.verifyCode == verifyCode) {  // 6 digit verify code
+        await User.findByIdAndUpdate(user._id, { signupComplete: true });
         const token = jwt.sign({ userId: user._id }, process.env.JWT_SECRET_KEY, { expiresIn: '6h' });
         return res.status(201).json({ message: 'Succeed', user: user, token: token });
       }
@@ -320,6 +321,10 @@ async resendVerifyCode(req, res) {
       console.log(user)
       if (!user) {
         return res.status(401).json({ message: `EnterValidEmailorPhone`, status: 'Failed' });
+      }
+
+      if (!user.signupComplete) {
+        return res.status(401).json({ message: 'User needs to complete verification', error: 'Incomplete signup' });
       }
 
       const isPasswordValid = await bcrypt.compare(password, user.password);
