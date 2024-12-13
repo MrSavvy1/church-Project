@@ -57,23 +57,35 @@ module.exports = {
       const token = jwt.sign({ userId: newUser._id }, process.env.JWT_SECRET_KEY, { expiresIn: '6h' });
 
       // send Email to the user for checking 6 digits verify code
-      const mailTitle = "Sign up to your monegliseci.com account";
-      const mailText = "";
-      const mailHTML = `<h1> Hi ${userName} </h1>
-                      Please enter the following verification code to verify this signup attempt. <br/>
-                      <h2> ${verifyCode} </h2>
-                      Don't recognize this signup attempt? 
-                      Regards,
-                      The Monegliseci Team`;
-      await sendEmailController.sendEmail(useremail, mailTitle, mailText, mailHTML);
-      console.log('sendEmail');
-      //
-      res.status(201).json({ message: 'Login succeed', user: newUser, token: token });
-    } catch (error) {
-      console.log('Failed--', error);
-      res.status(500).json({ error: 'Error', 'Server Error:': 'Failed' });
-    }
-  },
+      const transporter = nodemailer.createTransport({
+        service: 'gmail',
+        auth: {
+           user: process.env.GMAIL_USER,
+           pass: process.env.GMAIL_PASS
+       }
+    });
+
+    const mailOptions = {
+        from: '"Monegliseci Team" <no-reply@monegliseci.com>',
+        to: useremail,
+        subject: "Sign up to your monegliseci.com account",
+        html: `<h1>Hi ${userName}</h1>
+               <p>Please enter the following verification code to verify this signup attempt:</p>
+               <h2>${verifyCode}</h2>
+               <p>Don't recognize this signup attempt?</p>
+               <p>Regards,<br>The Monegliseci Team</p>`
+    };
+
+      await transporter.sendMail(mailOptions);
+      console.log('Verification email sent.');
+
+     res.status(201).json({ message: 'Signup successful', user: newUser, token: token });
+ } catch (error) {
+    console.log('Signup error:', error);
+    res.status(500).json({ error: 'Error', 'Server Error': 'Failed' });
+  }
+},
+
 
   async signupAuth(req, res) {
     try {
