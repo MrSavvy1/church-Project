@@ -464,45 +464,68 @@ async resendVerifyCode(req, res) {
 
   async updateProfile(req, res) {
     try {
-      const { username, useremail, phonenumber, birth, language, address, church, avatarurl, status, role  } = req.body;
+        const { username, useremail, phonenumber, birth, language, address, church, avatarurl, status, role } = req.body;
 
-      console.log(username, useremail, phonenumber, birth, language, address, church, avatarurl)
-      const user = await User.findOne({ userEmail: useremail });
+        console.log(username, useremail, phonenumber, birth, language, address, church, avatarurl);
+        
+        // Find the user by email
+        const user = await User.findOne({ userEmail: useremail });
 
-      const updateUser = await User.findByIdAndUpdate(user._id, {
-        userName: username,
-        userEmail: useremail,
-        phoneNumber: phonenumber,
-        birth: new Date(birth),
-        language: language,
-        address: address,
-        church: church,
-        avatarUrl: avatarurl,
-        status : status,
-        role : role
-      });
+        if (!user) {
+            return res.status(404).json({ message: 'User not found' });
+        }
 
-      if(role === 'admin') {
-        await Role.create({
-          userId: user._id,
-          churchPermission: false,
-          notificationPermission: false,
-          transactionPermission: false
-        })
-      } 
-      else {
-        await Role.deleteOne({userId: user._id});
-      }
+        // Update the user details
+        const updateUser = await User.findByIdAndUpdate(user._id, {
+            userName: username,
+            userEmail: useremail,
+            phoneNumber: phonenumber,
+            birth: new Date(birth),
+            language: language,
+            address: address,
+            church: church,
+            avatarUrl: avatarurl,
+            status: status,
+            role: role
+        });
 
-      const userInfo = await User.findOne({ userEmail: useremail });
+        // Handle Role logic
+        if (role === 'admin') {
+            const existingRole = await Role.findOne({ userId: user._id });
 
-      console.log(userInfo)
+            if (existingRole) {
+                // Update permissions if role already exists
+                await Role.findByIdAndUpdate(existingRole._id, {
+                    churchPermission: true,
+                    notificationPermission: true,
+                    transactionPermission: true
+                });
+            } else {
+                // Create a new role if it doesn't exist
+                await Role.create({
+                    userId: user._id,
+                    churchPermission: true,
+                    notificationPermission: true,
+                    transactionPermission: true
+                });
+            }
+        } else {
+            // Delete the role if the user is not an admin
+            await Role.deleteOne({ userId: user._id });
+        }
 
-      res.status(200).json({ message: 'Profile updated', user: userInfo });
+        // Fetch the updated user info
+        const userInfo = await User.findOne({ userEmail: useremail });
+
+        console.log(userInfo);
+
+        // Send a success response
+        res.status(200).json({ message: 'Profile updated', user: userInfo });
     } catch (error) {
-      res.status(500).json({ error: 'Error', 'Server Error:': 'Failed' });
+        console.error('Error updating profile:', error);
+        res.status(500).json({ error: 'Server Error', message: 'Failed to update profile' });
     }
-  },
+},
   async updatePassword(req, res) {
     try {
       const { useremail, oldpassword, newpassword, GoogleorFacebook } = req.body;
