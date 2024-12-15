@@ -323,6 +323,7 @@ async resendVerifyCode(req, res) {
         return res.status(401).json({ message: `EnterValidEmailorPhone`, status: 'Failed' });
       }
 
+      
       const isPasswordValid = await bcrypt.compare(password, user.password);
 
       console.log(isPasswordValid)
@@ -330,7 +331,7 @@ async resendVerifyCode(req, res) {
       if (!isPasswordValid) {
         return res.status(401).json({ message: 'PasswordIncorrect', status: 'Failed' });
       }
-
+      
       if (!user.signupComplete) {
         return res.status(401).json({ message: 'User needs to complete verification', error: 'Incomplete signup' });
       }

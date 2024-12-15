@@ -14,7 +14,7 @@ import user1 from "../assets/images/users/user1.jpg";
 import { useUserContext } from "../context/Context";
 
 const Header = () => {
-  const {signOut} = useUserContext();
+  const { signOut } = useUserContext();
   const [isOpen, setIsOpen] = React.useState(false);
   const [dropdownOpen, setDropdownOpen] = React.useState(false);
 
@@ -31,6 +31,7 @@ const Header = () => {
         <NavbarBrand href="/#/admin/user_list" className="d-lg-none">
           <LogoWhite />
         </NavbarBrand>
+        
         <Button
           color="dark"
           className="d-lg-none"
@@ -56,19 +57,19 @@ const Header = () => {
 
       <Collapse navbar isOpen={isOpen}>
         <div className="ms-auto">
-        <Dropdown isOpen={dropdownOpen} toggle={toggle}>
-          <DropdownToggle color="dark">
-            <img
-              src={user1}
-              alt="profile"
-              className="rounded-circle"
-              width="30"
-            ></img>
-          </DropdownToggle>
-          <DropdownMenu>
-            <DropdownItem onClick={signOut}>Logout</DropdownItem>
-          </DropdownMenu>
-        </Dropdown>
+          <Dropdown isOpen={dropdownOpen} toggle={toggle}>
+            <DropdownToggle color="dark">
+              <img
+                src={user1}
+                alt="profile"
+                className="rounded-circle"
+                width="30"
+              ></img>
+            </DropdownToggle>
+            <DropdownMenu>
+              <DropdownItem onClick={signOut}>Logout</DropdownItem>
+            </DropdownMenu>
+          </Dropdown>
         </div>
       </Collapse>
     </Navbar>

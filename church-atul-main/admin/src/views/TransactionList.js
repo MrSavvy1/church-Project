@@ -107,12 +107,12 @@ const TransactionList = () => {
         };
         return (
             <Row>
-                <Col sm={12} md={1}>
+                <Col sm={12} md={2}>
                     <FormGroup>
                         <Button onClick={exportToExcel}>Export to Excel</Button>
                     </FormGroup>
                 </Col>
-                <Col sm={12} md={3}>
+                <Col sm={12} md={2}>
                     <FormGroup>
                         <Input
                             id="exampleEmail"
