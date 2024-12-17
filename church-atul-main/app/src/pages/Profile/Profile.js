@@ -181,7 +181,8 @@ function ProfilePage({ navigation }) {
                 },
             })
                 .then(response => {
-                    setAvatarUrl(response.data.path);
+                    const imageUrl = `${envVar['BACKEND_LINK']}/image/${response.data.file.filename}`;
+                    setAvatarUrl(imageUrl);
                     setLoding(false);
                     Toast.show({
                         type: 'success',

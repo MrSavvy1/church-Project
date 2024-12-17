@@ -33,7 +33,9 @@ const ChurchList = () => {
 
         axios.post(`${process.env.REACT_APP_SERVER_API_URL}/upload`, formData)
             .then((response) => {
-                setChurchImage(response.data.path)
+                const imageUrl = `${process.env.REACT_APP_SERVER_API_URL}/image/${response.data.file.filename}`;
+                console.log('Image uploaded:', imageUrl);
+                setChurchImage(imageUrl)
                 toast.success(response.data.message)
             })
             .catch((error) => {
@@ -234,17 +236,23 @@ const ChurchList = () => {
                             </FormGroup>
                         </Col>
                         <Col sm={12} md={12} className="mb-3">
-                            <FormGroup>
-                                <Label for="exampleEmail">Church Image</Label>
-                                <Row>
-                                    <Col sm={12} md={6} className="mb-3">{churchImage === '' ? <img src={DefaultImage} className="w-100" alt="detaultImage" /> : <img src={churchImage} className="w-100" alt="churchImage" />}</Col>
+                        <FormGroup>
+                             <Label for="exampleEmail">Church Image</Label>
+                              <Row>
+                                  <Col sm={12} md={6} className="mb-3">
+                                     {churchImage === '' ? (
+                                         <img src={DefaultImage} className="w-100" alt="defaultImage" />
+                                        ) : (
+                                           <img src={churchImage} className="w-100" alt="churchImage" />
+                                       )}
+                                    </Col>
                                     <Col sm={12} md={6} className="d-flex align-items-center justify-content-center mb-3">
-                                        <ImageUploader
+                                     <ImageUploader
                                             onFileAdded={(img) => getImageFileObject(img)}
                                             onFileRemoved={(img) => runAfterImageDelete(img)}
-                                        />
-                                    </Col>
-                                </Row>
+                                     />
+                                 </Col>
+                              </Row>
                             </FormGroup>
                         </Col>
                     </Row>

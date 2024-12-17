@@ -37,6 +37,19 @@ module.exports = {
       const verifyCode = parseInt(Math.random() * 899999) + 100000;
       console.log('verifyCode', verifyCode);
       const church = await Church.find();
+      // Upload avatar if provided
+      let finalAvatarUrl = "https://villagesonmacarthur.com/wp-content/uploads/2020/12/Blank-Avatar.png"; // Default avatar
+      if (avatarUrl) {
+        try {
+          const uploadResponse = await axios.post(`${process.env.BASE_URL}/upload`, avatarUrl, {
+            headers: { 'Content-Type': 'multipart/form-data' },
+          });
+          finalAvatarUrl = `${process.env.BASE_URL}/image/${uploadResponse.data.file.filename}`;
+        } catch (error) {
+          console.error("Error uploading avatar:", error.message);
+        }
+      }
+        
 
       const newUser = await User.create({
         userName: userName,
@@ -48,7 +61,7 @@ module.exports = {
         language: language,
         address: "",
         password: hashedPassword,
-        avatarUrl: avatarUrl == "" ? "https://villagesonmacarthur.com/wp-content/uploads/2020/12/Blank-Avatar.png" : avatarUrl,
+        avatarUrl:  finalAvatarUrl,
         church: church[0] == null ? "" : church[0]?._id,
         role: "user",
         status: true
@@ -229,21 +242,38 @@ async resendVerifyCode(req, res) {
       });
 
       
-      const mailTitle = "Reset password to your monegliseci.com account";
-      const mailText = "";
-      const mailHTML = `<h1> Hi </h1>
-                      Please enter the following verification code to verify this reset password attempt. <br/>
-                      <h2> ${verifyCode} </h2>
-                      Don't recognize this forgot password attempt? 
-                      Regards,
-                      The Monegliseci Team`;
-      await sendEmailController.sendEmail(useremail, mailTitle, mailText, mailHTML);
-     
-      res.status(201).json({ message: 'VerifySent', token: token });
-    } catch (error) {
-      console.log('Failed', error);
-      res.status(500).json({ message: 'Failed', 'Server Error:': 'Failed' });
-    }
+      const transporter = nodemailer.createTransport({
+        service: 'gmail',
+        auth: {
+            user: process.env.GMAIL_USER,
+            pass: process.env.GMAIL_PASS 
+        }
+    });
+
+    const mailOptions = {
+        from: '"Monegliseci Team" <no-reply@monegliseci.com>', 
+        to: useremail, 
+        subject: "Verification Code", 
+        html: `<h1> Hi </h1>
+               Please enter the following verification code to verify this attempt. <br/>
+               <h2> ${verifyCode} </h2>
+               Don't recognize this signup attempt? 
+               Regards,
+               The Monegliseci Team` 
+    };
+
+    await transporter.sendMail(mailOptions);
+
+    // Save the verification code to the user's record (or handle it as needed)
+    user.resetPasswordToken = verifyCode;
+    user.resetPasswordExpires = Date.now() + 3600000; // 1 hour
+    await user.save();
+
+    res.status(200).json({ message: 'Verification code sent to email' });
+  } catch (error) {
+    console.error('Error sending verification code:', error);
+    res.status(500).json({ error: 'Server Error', message: 'Failed to send verification code' });
+}
   },
 
   async resetPassword(req, res) {

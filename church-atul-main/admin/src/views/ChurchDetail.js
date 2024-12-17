@@ -1,12 +1,11 @@
 import { useEffect, useState } from "react";
 import axios from "axios";
-import { Row, Col, Table, Card, CardTitle, CardBody, CardSubtitle,Button, Modal, ModalHeader, ModalBody, ModalFooter, FormGroup, Input, Label } from "reactstrap";
-import { toast }from "react-toastify";
+import { Row, Col, Table, Card, CardTitle, CardBody, Button, Modal, ModalHeader, ModalBody, ModalFooter, FormGroup, Input, Label } from "reactstrap";
+import { toast } from "react-toastify";
 import { Link, useParams } from "react-router-dom";
-import ImageUploader from 'react-image-upload'
-import 'react-image-upload/dist/index.css'
+import ImageUploader from 'react-image-upload';
+import 'react-image-upload/dist/index.css';
 import DefaultImage from '../assets/images/bg/default.jpg';
-
 
 const ChurchDetail = () => {
     let { id } = useParams();
@@ -20,13 +19,12 @@ const ChurchDetail = () => {
     const [modal, setModal] = useState(false);
     const [isOpen, setIsOpen] = useState(false);
 
-    const [projectId, setProjectId] = useState('')
+    const [projectId, setProjectId] = useState('');
     const [projectName, setProjectName] = useState('');
     const [projectImage, setProjectImage] = useState('');
     const [projectDescription, setProjectDescription] = useState('');
 
     const toggle = () => setModal(!modal);
-
 
     const getImageFileObject = (imageFile) => {
         const formData = new FormData();
@@ -34,18 +32,19 @@ const ChurchDetail = () => {
 
         axios.post(`${process.env.REACT_APP_SERVER_API_URL}/upload`, formData)
             .then((response) => {
-                setChurchImage(response.data.path)
-                toast.success(response.data.message)
+                const imageUrl = `${process.env.REACT_APP_SERVER_API_URL}/image/${response.data.file.filename}`;
+                setChurchImage(imageUrl);
+                toast.success(response.data.message);
             })
             .catch((error) => {
                 console.error(error);
-                toast.error(error)
+                toast.error(error.message);
             });
-    }
+    };
 
     const runAfterImageDelete = (file) => {
-        console.log({ file })
-    }
+        console.log({ file });
+    };
 
     const getProjectImageFileObject = (imageFile) => {
         const formData = new FormData();
@@ -53,18 +52,19 @@ const ChurchDetail = () => {
 
         axios.post(`${process.env.REACT_APP_SERVER_API_URL}/upload`, formData)
             .then((response) => {
-                setProjectImage(response.data.path)
-                toast.success(response.data.message)
+                const imageUrl = `${process.env.REACT_APP_SERVER_API_URL}/image/${response.data.file.filename}`;
+                setProjectImage(imageUrl);
+                toast.success(response.data.message);
             })
             .catch((error) => {
                 console.error(error);
-                toast.error(error)
+                toast.error(error.message);
             });
-    }
+    };
 
     const runAfterProjectImageDelete = (file) => {
-        console.log({ file })
-    }
+        console.log({ file });
+    };
 
     const createProjectButton = () => {
         setProjectId('');
@@ -72,7 +72,7 @@ const ChurchDetail = () => {
         setProjectImage('');
         setProjectDescription('');
         setModal(true);
-    }
+    };
 
     const selectProject = (id, name, image, description) => {
         setProjectId(id);
@@ -80,17 +80,17 @@ const ChurchDetail = () => {
         setProjectImage(image);
         setProjectDescription(description);
         toggle(true);
-    }
+    };
 
     const createNewProject = async () => {
         const token = localStorage.getItem('token');
         const headers = {
             authorization: `${token}`
-        }
+        };
 
-        if(projectName === '' || projectDescription === '' || projectImage === '') {
-            toast.error('You must input field');
-            return
+        if (projectName === '' || projectDescription === '' || projectImage === '') {
+            toast.error('You must input all fields');
+            return;
         }
 
         const newProject = {
@@ -115,21 +115,19 @@ const ChurchDetail = () => {
                 toggle();
             })
             .catch(function (error) {
-                console.log(error)
+                console.log(error);
             });
-
-
-    }
+    };
 
     const updateProject = async () => {
         const token = localStorage.getItem('token');
         const headers = {
             authorization: `${token}`
-        }
+        };
 
-        if(projectName === '' || projectDescription === '' || projectImage === '') {
-            toast.error('You must input field');
-            return
+        if (projectName === '' || projectDescription === '' || projectImage === '') {
+            toast.error('You must input all fields');
+            return;
         }
 
         const updateProject = {
@@ -155,39 +153,38 @@ const ChurchDetail = () => {
                 toggle();
             })
             .catch(function (error) {
-                console.log(error)
+                console.log(error);
             });
-
-    }
+    };
 
     const deleteButton = async (id) => {
         setIsOpen(true);
         setProjectId(id);
-    }
+    };
 
     const deleteProject = async () => {
         const token = localStorage.getItem('token');
         const headers = {
             authorization: `${token}`
-        }
+        };
         await axios.get(`${process.env.REACT_APP_SERVER_API_URL}/api/church/${id}/delete_project/${projectId}`, { headers })
             .then(function (response) {
-                toast.success(response.data.message)
+                toast.success(response.data.message);
             })
             .catch(function (error) {
-
+                console.log(error);
             });
-    }
+    };
 
     const updateChurch = async () => {
         const token = localStorage.getItem('token');
         const headers = {
             authorization: `${token}`
-        }
+        };
 
-        if(churchName === '' || churchAddress === '' || churchImage === '') {
-            toast.error('You must input field');
-            return
+        if (churchName === '' || churchAddress === '' || churchImage === '') {
+            toast.error('You must input all fields');
+            return;
         }
 
         const data = {
@@ -196,7 +193,7 @@ const ChurchDetail = () => {
             churchAddress: churchAddress,
             churchImage: churchImage,
             status: status
-        }
+        };
 
         await axios.post(`${process.env.REACT_APP_SERVER_API_URL}/api/church/update_church`,
             data,
@@ -210,27 +207,27 @@ const ChurchDetail = () => {
                 toast.success(response.data.message);
             })
             .catch(function (error) {
-                console.log(error)
+                console.log(error);
             });
-    }
+    };
 
     const getChurch = async () => {
         const token = localStorage.getItem('token');
         const headers = {
             authorization: `${token}`
-        }
+        };
         await axios.get(`${process.env.REACT_APP_SERVER_API_URL}/api/church/get_church_detail/${id}`, { headers })
             .then(function (response) {
                 setChurchName(response.data.church.churchName);
                 setChurchAddress(response.data.church.churchAddress);
                 setChurchImage(response.data.church.photoUrl);
                 setStatus(response.data.church.status);
-                setProjectData(response.data.projects)
+                setProjectData(response.data.projects);
             })
             .catch(function (error) {
-                toast.error(error)
+                toast.error(error);
             });
-    }
+    };
 
     useEffect(() => {
         getChurch();
@@ -243,10 +240,7 @@ const ChurchDetail = () => {
                 <Col lg="12">
                     <Card>
                         <CardBody>
-                            <CardTitle tag="h5">Churuch Detail</CardTitle>
-                            {/* <CardSubtitle className="mb-2 text-muted" tag="h6">
-                                Churuch Detail
-                            </CardSubtitle> */}
+                            <CardTitle tag="h5">Church Detail</CardTitle>
                             <hr />
                             <Row className="mt-2">
                                 <Col sm={12} md={6}>
@@ -269,17 +263,19 @@ const ChurchDetail = () => {
                                             id="exampleEmail"
                                             name="UserName"
                                             value={churchAddress}
-                                            placeholder="Church Name"
+                                            placeholder="Church Address"
                                             type="text"
                                             onChange={(e) => setChurchAddress(e.target.value)}
                                         />
                                     </FormGroup>
                                 </Col>
-                                <Col sm={12} md={6} >
+                                <Col sm={12} md={6}>
                                     <FormGroup>
                                         <Label for="exampleEmail">Church Image</Label>
                                         <Row>
-                                            <Col sm={12} md={6} className="mb-3"><img src={churchImage} className="w-100" alt="churchImage"/></Col>
+                                            <Col sm={12} md={6} className="mb-3">
+                                                <img src={churchImage} className="w-100" alt="churchImage" />
+                                            </Col>
                                             <Col sm={12} md={6} className="d-flex align-items-center justify-content-center mb-3">
                                                 <ImageUploader
                                                     onFileAdded={(img) => getImageFileObject(img)}
@@ -321,9 +317,9 @@ const ChurchDetail = () => {
                                 <tbody>
                                     {
                                         projectData?.map((item, index) => (
-                                            <tr>
+                                            <tr key={index}>
                                                 <td className="w-20">{item.projectName}</td>
-                                                <td className="w-10"><img src={item.projectPhoto} width='100' height='60' style={{ objectFit: 'cover' }} alt="projectImage"/></td>
+                                                <td className="w-10"><img src={item.projectPhoto} width='100' height='60' style={{ objectFit: 'cover' }} alt="projectImage" /></td>
                                                 <td className="w-50">{item.projectDescription}</td>
                                                 <td className="w-20">
                                                     <Button color="info" className="ms-3" onClick={() => selectProject(item._id, item.projectName, item.projectPhoto, item.projectDescription)}><i className='bi bi-pencil-square'></i></Button>
@@ -333,7 +329,8 @@ const ChurchDetail = () => {
                                         ))
                                     }
                                 </tbody>
-                            </Table><hr />
+                            </Table>
+                            <hr />
                             <Row>
                                 <Col className="text-end">
                                     <Button color="info" className="ms-3" onClick={updateChurch}>Save Church</Button>
@@ -363,7 +360,13 @@ const ChurchDetail = () => {
                                 <FormGroup>
                                     <Label for="exampleEmail">Project Image</Label>
                                     <Row>
-                                        <Col sm={12} md={6} className="mb-3">{projectImage === '' ? <img src={DefaultImage} className="w-100" alt="defaultImage"/> : <img src={projectImage} className="w-100" alt="projectImage"/>}</Col>
+                                        <Col sm={12} md={6} className="mb-3">
+                                            {projectImage === '' ? (
+                                                <img src={DefaultImage} className="w-100" alt="defaultImage" />
+                                            ) : (
+                                                <img src={projectImage} className="w-100" alt="projectImage" />
+                                            )}
+                                        </Col>
                                         <Col sm={12} md={6} className="d-flex align-items-center justify-content-center mb-3">
                                             <ImageUploader
                                                 onFileAdded={(img) => getProjectImageFileObject(img)}
@@ -379,7 +382,7 @@ const ChurchDetail = () => {
                                     <Input
                                         id="exampleEmail"
                                         name="UserName"
-                                        placeholder="Project Name"
+                                        placeholder="Project Description"
                                         type="textarea"
                                         value={projectDescription}
                                         onChange={(e) => setProjectDescription(e.target.value)}
@@ -390,16 +393,14 @@ const ChurchDetail = () => {
                     </ModalBody>
                     <ModalFooter>
                         {projectId === '' ? <Button color="info" onClick={createNewProject}>Create New Project</Button> : <Button color="info" onClick={updateProject}>Update Project</Button>}
-                        <Button color="secondary" >
-                            Cancel
-                        </Button>
+                        <Button color="secondary" onClick={toggle}>Cancel</Button>
                     </ModalFooter>
                 </Modal>
-                <Modal isOpen={isOpen} toggle={() => setIsOpen(false)} centered='ture'>
+                <Modal isOpen={isOpen} toggle={() => setIsOpen(false)} centered>
                     <ModalBody className="text-center">
                         <h4 className="my-3">Are you sure you want to delete the project from the database?</h4>
-                        <Button color="danger" className="ms-3" onClick={() => { deleteProject(); setIsOpen(false) }}>Yes</Button>
-                        <Button color="info" className="ms-3" onClick={() => { setIsOpen(false) }}>No</Button>
+                        <Button color="danger" className="ms-3" onClick={() => { deleteProject(); setIsOpen(false); }}>Yes</Button>
+                        <Button color="info" className="ms-3" onClick={() => setIsOpen(false)}>No</Button>
                     </ModalBody>
                 </Modal>
             </Row>
