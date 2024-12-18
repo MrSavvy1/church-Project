@@ -144,13 +144,14 @@ const UserList = () => {
         setUserId(response.data.user._id);
         setUserName(response.data.user.userName);
         setUserEmail(response.data.user.userEmail);
-        setBirth(response.data.user.birth);
+        setBirth(new Date(response.data.user.birth).toISOString().split('T')[0]);
         setPhone(response.data.user.phoneNumber);
         setAddress(response.data.user.address);
         setLanguage(response.data.user.language);
         setChurch(response.data.user.church);
         setAvatarUrl(response.data.user.avatarUrl);
         setStatus(response.data.user.status);
+        setRole(response.data.user.role);
         toggle();
       })
       .catch(function (error) {
@@ -307,7 +308,7 @@ const UserList = () => {
         </Col>
       </Row>
       <Modal isOpen={modal} toggle={toggle}>
-        <ModalHeader toggle={toggle}>Modal title</ModalHeader>
+        <ModalHeader toggle={toggle}>Edit User</ModalHeader>
         <ModalBody>
           <Row>
             <Col sm={12} md={6} className="mb-3">
