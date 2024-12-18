@@ -157,18 +157,31 @@ module.exports = {
     },
     async deleteProject(req, res) {
         try {
-
             const churchId = req.params.cid;
             const projectId = req.params.id;
 
-            const project = await Project.findByIdAndDelete(projectId);
+            console.log(`Received request to delete project with ID: ${projectId} from church with ID: ${churchId}`);
 
+            // Find the project by its ID and check if it belongs to the specified church
+            const project = await Project.findOne({ _id: projectId, churchId: churchId });
+            if (!project) {
+                console.log(`Project with ID: ${projectId} not found or does not belong to church with ID: ${churchId}`);
+                return res.status(404).json({ message: 'Project not found or does not belong to the specified church' });
+            }
+            console.log(`Project with ID: ${projectId} found and belongs to church with ID: ${churchId}`);
 
-            res.status(200).json({ message: 'Project deleted', project: { churchName: church.churchName, projectData: church } });
+            // Delete the project
+            await Project.findByIdAndDelete(projectId);
+            console.log(`Project with ID: ${projectId} deleted`);
+
+            res.status(200).json({ message: 'Project deleted successfully' });
+            console.log(`Response sent: Project deleted successfully`);
         } catch (error) {
+            console.error('Error deleting project:', error);
             res.status(500).json({ error: 'Error', 'Server Error:': 'Failed' });
         }
     },
+    
     async updateProject(req, res) {
         try {
             const { projectId, projectData } = req.body;

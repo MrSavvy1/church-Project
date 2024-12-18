@@ -113,68 +113,76 @@ const ChurchDetail = () => {
                 setProjectDescription('');
                 toast.success(response.data.message);
                 toggle();
+                updateChurch()
             })
+            
             .catch(function (error) {
                 console.log(error);
             });
     };
 
     const updateProject = async () => {
-        const token = localStorage.getItem('token');
-        const headers = {
-            authorization: `${token}`
-        };
-
-        if (projectName === '' || projectDescription === '' || projectImage === '') {
-            toast.error('You must input all fields');
-            return;
-        }
-
-        const updateProject = {
-            projectName: projectName,
-            projectDescription: projectDescription,
-            projectPhoto: projectImage,
-            donatePrice: 0
-        };
-
-        await axios.post(`${process.env.REACT_APP_SERVER_API_URL}/api/church/update_project`,
-            {
-                churchId: id,
-                projectId: projectId,
-                projectData: [updateProject]
-            },
-            { headers })
-            .then(function (response) {
-                setProjectId('');
-                setProjectName('');
-                setProjectImage('');
-                setProjectDescription('');
-                toast.success(response.data.message);
-                toggle();
-            })
-            .catch(function (error) {
-                console.log(error);
-            });
+    const token = localStorage.getItem('token');
+    const headers = {
+        authorization: `${token}`
     };
 
-    const deleteButton = async (id) => {
-        setIsOpen(true);
-        setProjectId(id);
+    if (projectName === '' || projectDescription === '' || projectImage === '') {
+        toast.error('You must input all fields');
+        return;
+    }
+
+    const updateProject = {
+        projectName: projectName,
+        projectDescription: projectDescription,
+        projectPhoto: projectImage,
+        donatePrice: 0
     };
 
-    const deleteProject = async () => {
-        const token = localStorage.getItem('token');
-        const headers = {
-            authorization: `${token}`
-        };
-        await axios.get(`${process.env.REACT_APP_SERVER_API_URL}/api/church/${id}/delete_project/${projectId}`, { headers })
-            .then(function (response) {
-                toast.success(response.data.message);
-            })
-            .catch(function (error) {
-                console.log(error);
-            });
-    };
+    await axios.post(`${process.env.REACT_APP_SERVER_API_URL}/api/church/update_project`,
+        {
+            churchId: id,
+            projectId: projectId,
+            projectData: [updateProject]
+        },
+        { headers })
+        .then(function (response) {
+            setProjectId('');
+            setProjectName('');
+            setProjectImage('');
+            setProjectDescription('');
+            toast.success(response.data.message);
+            toggle();
+
+            // Update the projectData state immediately
+            setProjectData(prevData => prevData.map(project => 
+                project._id === projectId ? { ...project, ...updateProject } : project
+            ));
+        })
+        .catch(function (error) {
+            console.log(error);
+        });
+};
+
+const deleteButton = async (id) => {
+    setIsOpen(true);
+    setProjectId(id);
+}
+
+const deleteProject = async () => {
+    const token = localStorage.getItem('token');
+    const headers = {
+        authorization: `${token}`
+    }
+    await axios.get(`${process.env.REACT_APP_SERVER_API_URL}/api/church/${id}/delete_project/${projectId}`, { headers })
+        .then(function (response) {
+            toast.success(response.data.message)
+            updateChurch()
+        })
+        .catch(function (error) {
+
+        });
+}
 
     const updateChurch = async () => {
         const token = localStorage.getItem('token');
@@ -231,7 +239,7 @@ const ChurchDetail = () => {
 
     useEffect(() => {
         getChurch();
-    }, [modal, isOpen]);
+    }, []);
 
     return (
         <>
@@ -274,7 +282,7 @@ const ChurchDetail = () => {
                                         <Label for="exampleEmail">Church Image</Label>
                                         <Row>
                                             <Col sm={12} md={6} className="mb-3">
-                                                <img src={churchImage} className="w-100" alt="churchImage" />
+                                                <img src={churchImage || DefaultImage} className="w-100" alt="churchImage" />
                                             </Col>
                                             <Col sm={12} md={6} className="d-flex align-items-center justify-content-center mb-3">
                                                 <ImageUploader
