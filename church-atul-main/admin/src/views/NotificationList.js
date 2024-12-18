@@ -173,7 +173,7 @@ const NotificationList = () => {
                 <Col lg="12">
                     <Card>
                         <CardBody>
-                            <DataTable title="Notifications" pagination subHeader subHeaderComponent={<Button color="info" onClick={createButton}>Create Notification</Button>} columns={columns} data={notificationList} defaultSortFieldId={1}/>                            
+                            <DataTable title="Notifications" pagination subHeader subHeaderComponent={<Button color="info" onClick={createButton}>Create Notification</Button>} columns={columns} data={notificationList} defaultSortFieldId={4} defaultSortAsc={false}/>                            
                         </CardBody>
                     </Card>
                 </Col>
