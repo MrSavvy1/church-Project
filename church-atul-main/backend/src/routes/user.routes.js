@@ -16,6 +16,7 @@ router.post('/checkSendcode', userController.checkSendcode);
 router.post('/signin', userController.signin);
 router.post('/signinWithGoogle', userController.signinWithGoogle);
 router.post('/signinWithFacebook', userController.signinWithFacebook);
+router.post('/apple', userController.signinWithApple)
 router.post('/signin_admin', userController.signinAdmin);
 router.post('/update_profile', verifyToken, userController.updateProfile);
 router.post('/checkPhoneNumber', verifyToken, userController.checkPhoneNumber);

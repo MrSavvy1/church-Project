@@ -11,7 +11,8 @@
   "author": "",
   "license": "ISC",
   "dependencies": {
-    "axios": "^1.7.8",
+    "apple-signin-auth": "^1.7.8",
+    "axios": "^1.7.9",
     "bcrypt": "^5.1.1",
     "body-parser": "^1.20.2",
     "chai": "^4.3.7",
@@ -19,6 +20,7 @@
     "dotenv": "^16.3.1",
     "express": "^4.21.2",
     "flutterwave-node-v3": "^1.1.12",
+    "form-data": "^4.0.1",
     "fs": "^0.0.1-security",
     "gridfs-stream": "^1.1.1",
     "jsonwebtoken": "^9.0.2",

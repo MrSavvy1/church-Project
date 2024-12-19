@@ -2,6 +2,12 @@ const bcrypt = require('bcrypt');
 const User = require('../models/user.model');
 const jwt = require('jsonwebtoken');
 const dotenv = require('dotenv');
+const axios = require('axios');
+const multer = require('multer'); // Import multer
+const path = require('path');
+const FormData = require('form-data');
+const { verifyIdToken } = require('apple-signin-auth');
+
 dotenv.config();
 
 const nodemailer = require('nodemailer');
@@ -9,96 +15,115 @@ const Transaction = require('../models/transaction.model');
 const Church = require('../models/church.model');
 const sendEmailController = require('../controllers/sendEmail');
 const Role = require('../models/role.model');
+const storage = multer.memoryStorage(); 
+const upload = multer({ storage: storage }).single('avatarUrl');
 
 module.exports = {
   async signup(req, res) {
-    try {
-      const { useremail, phonenumber, password, language, avatarUrl, userName, GoogleorFacebook } = req.body;
-      console.log("hhhh", useremail)
+    upload(req, res, async function (err) {
+      if (err) {
+        return res.status(500).json({ error: "Error uploading file", message: err.message });
+      }
+    
+      try {
+        const { useremail, phonenumber, password, language, userName, GoogleorFacebook } = req.body;
+        console.log("hhhh", useremail);
 
       // const user = await User.findOne({ $and: [{ userEmail: useremail }, { phoneNumber: phonenumber }] });
-      const user = await User.findOne({ userEmail: useremail });
+        const user = await User.findOne({ userEmail: useremail });
 
-      console.log("user", user)
+        console.log("user", user);
 
-      if (user != null) {
-        return res.status(401).json({ message: 'User already exists', error: 'User already exists' });
-      }
-
-      const phoneUser = await User.findOne({ phoneNumber: phonenumber });
-      if (phoneUser != null) {
-        return res.status(401).json({ message: 'Phone already exists.', error: 'Phone already exists.' });
-      }
-
-      let rPassword;
-      if (!password) {rPassword = "";}
-      else {rPassword = password;}
-      const hashedPassword = await bcrypt.hash(rPassword, 10);
-      const verifyCode = parseInt(Math.random() * 899999) + 100000;
-      console.log('verifyCode', verifyCode);
-      const church = await Church.find();
-      // Upload avatar if provided
-      let finalAvatarUrl = "https://villagesonmacarthur.com/wp-content/uploads/2020/12/Blank-Avatar.png"; // Default avatar
-      if (avatarUrl) {
-        try {
-          const uploadResponse = await axios.post(`${process.env.BASE_URL}/upload`, avatarUrl, {
-            headers: { 'Content-Type': 'multipart/form-data' },
-          });
-          finalAvatarUrl = `${process.env.BASE_URL}/image/${uploadResponse.data.file.filename}`;
-        } catch (error) {
-          console.error("Error uploading avatar:", error.message);
+        if (user != null) {
+          return res.status(401).json({ message: 'User already exists', error: 'User already exists' });
         }
-      }
+
+        const phoneUser = await User.findOne({ phoneNumber: phonenumber });
+        if (phoneUser != null) {
+          return res.status(401).json({ message: 'Phone already exists.', error: 'Phone already exists.' });
+        }
+
+        let rPassword;
+        if (!password) {
+          rPassword = "";
+        } else {
+          rPassword = password;
+        }
+        const hashedPassword = await bcrypt.hash(rPassword, 10);
+        const verifyCode = parseInt(Math.random() * 899999) + 100000;
+        console.log('verifyCode', verifyCode);
+        const church = await Church.find();
+
+        // Upload avatar if provided
+        let finalAvatarUrl = "https://villagesonmacarthur.com/wp-content/uploads/2020/12/Blank-Avatar.png"; // Default avatar
+        if (req.file) {
+          console.log('req.file', req.file);
+          const formData = new FormData();
+          formData.append('image', req.file.buffer, req.file.originalname);
         
+          try {
+            const response = await axios.post(`${process.env.BASE_URL}/upload`, formData, {
+              headers: {
+                ...formData.getHeaders(),
+                
+              },
+            });
+            console.log('Avatar uploaded successfully:', response.data);
+            finalAvatarUrl = `${process.env.BASE_URL}/image/${response.data.file.filename}`;
+            console.log(finalAvatarUrl);
+          } catch (error) {
+            console.error('Error uploading avatar:', error);
+          }
+        }
 
-      const newUser = await User.create({
-        userName: userName,
-        userEmail: useremail,
-        verifyCode: verifyCode,
-        phoneNumber: phonenumber,
-        GoogleorFacebook: GoogleorFacebook ?? false, 
-        birth: new Date,
-        language: language,
-        address: "",
-        password: hashedPassword,
-        avatarUrl:  finalAvatarUrl,
-        church: church[0] == null ? "" : church[0]?._id,
-        role: "user",
-        status: true
-      });
+        const newUser = await User.create({
+          userName: userName,
+          userEmail: useremail,
+          verifyCode: verifyCode,
+          phoneNumber: phonenumber,
+          GoogleorFacebook: GoogleorFacebook ?? false,
+          birth: new Date,
+          language: language,
+          address: "",
+          password: hashedPassword,
+          avatarUrl: finalAvatarUrl,
+          church: church[0] == null ? "" : church[0]?._id,
+          role: "user",
+          status: true
+        });
 
-      const token = jwt.sign({ userId: newUser._id }, process.env.JWT_SECRET_KEY, { expiresIn: '6h' });
+        const token = jwt.sign({ userId: newUser._id }, process.env.JWT_SECRET_KEY, { expiresIn: '6h' });
 
-      // send Email to the user for checking 6 digits verify code
-      const transporter = nodemailer.createTransport({
-        service: 'gmail',
-        auth: {
-           user: process.env.GMAIL_USER,
-           pass: process.env.GMAIL_PASS
-       }
+        // send Email to the user for checking 6 digits verify code
+        const transporter = nodemailer.createTransport({
+          service: 'gmail',
+          auth: {
+            user: process.env.GMAIL_USER,
+            pass: process.env.GMAIL_PASS
+          }
+        });
+
+        const mailOptions = {
+          from: '"Monegliseci Team" <no-reply@monegliseci.com>',
+          to: useremail,
+          subject: "Sign up to your monegliseci.com account",
+          html: `<h1>Hi ${userName}</h1>
+                 <p>Please enter the following verification code to verify this signup attempt:</p>
+                 <h2>${verifyCode}</h2>
+                 <p>Don't recognize this signup attempt?</p>
+                 <p>Regards,<br>The Monegliseci Team</p>`
+        };
+
+        await transporter.sendMail(mailOptions);
+        console.log('Verification email sent.');
+
+        res.status(201).json({ message: 'Signup successful', user: newUser, token: token });
+      } catch (error) {
+        console.log('Signup error:', error);
+        res.status(500).json({ error: 'Error', 'Server Error': 'Failed' });
+      }
     });
-
-    const mailOptions = {
-        from: '"Monegliseci Team" <no-reply@monegliseci.com>',
-        to: useremail,
-        subject: "Sign up to your monegliseci.com account",
-        html: `<h1>Hi ${userName}</h1>
-               <p>Please enter the following verification code to verify this signup attempt:</p>
-               <h2>${verifyCode}</h2>
-               <p>Don't recognize this signup attempt?</p>
-               <p>Regards,<br>The Monegliseci Team</p>`
-    };
-
-      await transporter.sendMail(mailOptions);
-      console.log('Verification email sent.');
-
-     res.status(201).json({ message: 'Signup successful', user: newUser, token: token });
- } catch (error) {
-    console.log('Signup error:', error);
-    res.status(500).json({ error: 'Error', 'Server Error': 'Failed' });
-  }
-},
-
+  },
 
   async signupAuth(req, res) {
     try {
@@ -418,6 +443,43 @@ async resendVerifyCode(req, res) {
       res.status(500).json({ error: 'Error', 'Server Error:': 'Failed' });
     }
   },
+
+  async signinWithApple(req, res) {
+    try {
+      const { id_token, user } = req.body;
+  
+      // Verify the ID token with Apple's public keys
+      const appleData = await verifyIdToken(id_token, {
+        audience: process.env.APPLE_CLIENT_ID,
+        ignoreExpiration: false,
+      });
+  
+      const email = appleData.email || user.email;
+  
+      // Check if the user exists
+      let existingUser = await User.findOne({ userEmail: email });
+  
+      if (!existingUser) {
+        // If user doesn't exist, create a new one
+        existingUser = await User.create({
+          userName: user.name || email,
+          userEmail: email,
+          language: req.body.language || 'en',
+          avatarUrl: req.body.avatarUrl || 'default_avatar_url',
+          role: 'user',
+          status: true,
+        });
+      }
+  
+      // Generate JWT token
+      const token = jwt.sign({ userId: existingUser._id }, process.env.JWT_SECRET_KEY, { expiresIn: '6h' });
+  
+      res.status(200).json({ message: 'Apple Sign-In successful', user: existingUser, token });
+    } catch (error) {
+      console.error('Error with Apple Sign-In:', error);
+      res.status(500).json({ error: 'Server Error', message: 'Failed to sign in with Apple' });
+    }
+  },  
 
   async signinAdmin(req, res) {
     try {
