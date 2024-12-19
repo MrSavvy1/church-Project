@@ -308,7 +308,7 @@ const TransactionList = () => {
                 <Col>
                     <Card className="transaction-table">
                         <CardBody>
-                            <DataTable title="Transactions" subHeader subHeaderComponent={subHeaderComponentMemo} pagination columns={columns} data={filteredItems} defaultSortFieldId={1} />
+                            <DataTable title="Transactions" subHeader subHeaderComponent={subHeaderComponentMemo} pagination columns={columns} data={filteredItems} defaultSortFieldId={5} defaultSortAsc={false}/>
                             <div ref={targetRef} className="px-3 position-fixed bottom-100 z-0">
                                 <hr />
                                 <div className="text-center d-flex align-items-center justify-content-between py-5 px-3">
