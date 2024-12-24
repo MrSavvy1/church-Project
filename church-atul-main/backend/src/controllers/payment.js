@@ -6,16 +6,13 @@ const User = require('../models/user.model');
 const mongoose = require('mongoose');
 
 const paymentInstance =  new PaymentService();
-
 exports.startPayment = async (req, res) => {
     try {
         const response = await paymentInstance.startPayment(req.body);
 
-        
         const { userId, churchId, email, amount, type, projectId } = response;
         const { reference, access_code, authorization_url } = response.data;
 
-        
         console.log('userId:', userId);
         console.log('churchId:', churchId);
         console.log('email:', email);
@@ -37,11 +34,10 @@ exports.startPayment = async (req, res) => {
             console.log(`Church not found for ID: ${churchId}`);
             return res.status(404).json({ status: "Failed", message: "Church not found" });
         }
-        redirect = true;       
 
         const newUser = await User.findById(userId);
         setTimeout(async () => {
-            await exports.getPayment({
+            const paymentResponse = await exports.getPayment({
                 query: {
                     reference,
                     userId,
@@ -50,19 +46,28 @@ exports.startPayment = async (req, res) => {
                     amount,
                     type,
                     email,
-                    redirect
+                    redirect: true
                 }
             }, res);
-        }, 180000); 
-       
-        res.status(201).json({
-            status: "Success",
-            reference: reference,
-            access_code: access_code,
-            authorization_url: authorization_url
-        });
+
+           
+            const { reply, redirectUrl } = paymentResponse;
+
+            
+            if (reply === "Successful") {
+                res.status(200).json({ status: "Success", redirectUrl: redirectUrl });
+                console.log(`Redirecting to church home page for user ${userId}`);
+            } else {
+                res.status(200).json({ status: "Failed", redirectUrl: redirectUrl });
+                console.log(`Redirecting to signup page for user ${userId}`);
+            }
+        }, 60000);
+
+        
     } catch (error) {
-        res.status(500).json({ status: "Failed", message: error.message });
+        if (!res.headersSent) {
+            res.status(500).json({ status: "Failed", message: error.message });
+        }
     }
 };
 
@@ -92,14 +97,13 @@ exports.getPayment = async (req, res) => {
         if (!paystackResponse || !paystackResponse.data) {
             return res.status(404).json({ status: "Failed", message: "Transaction not found" });
         }
-        
-        
-        const status = paystackResponse.data.status === 'success' ? 'Successful' : 'Failed';
+
+        const reply = paystackResponse.data.status === 'success' ? 'Successful' : 'Failed';
         console.log('Paystack response:', paystackResponse.data.status);
-        const notificationTitle = status === 'Successful' ? 'Transaction Successful' : 'Transaction Failed';
-        const notificationDescription = status === 'Successful' 
+        const notificationTitle = reply === 'Successful' ? 'Transaction Successful' : 'Transaction Failed';
+        const notificationDescription = reply === 'Successful'
             ? `Your $${amount} ${type} transaction has been successfully completed. Paystack response is ${paystackResponse.data.status}`
-            : `Your $${amount} ${type} transaction proccess is ${paystackResponse.data.status}`;
+            : `Your $${amount} ${type} transaction process is ${paystackResponse.data.status}`;
 
         await Notification.create({
             userId: userId,
@@ -112,7 +116,7 @@ exports.getPayment = async (req, res) => {
 
         console.log('Notification created...:', Notification);
 
-        if (status === 'Successful') {
+        if (reply === 'Successful') {
             const newTransaction = await Transaction.create({
                 userId: userId,
                 churchId: churchId,
@@ -120,7 +124,7 @@ exports.getPayment = async (req, res) => {
                 amount: amount,
                 createdDate: new Date(),
                 type: type,
-                status: status,
+                status: reply,
                 email: email,
                 reference: reference
             });
@@ -129,14 +133,12 @@ exports.getPayment = async (req, res) => {
 
         console.log('Redirecting to the homepage...');
         if (redirect === true) {
-            if (!res.headersSent) {
-                res.redirect('/');
-                console.log("done with redirect");
-            }
+            const redirectUrl = reply === 'Successful' 
+                ? 'https://church-project-5f1j.onrender.com/#/login' 
+                : 'https://church-project-5f1j.onrender.com/#/signup';
+            return { status: "Success", reply: reply, redirectUrl: redirectUrl };
         } else {
-            if (!res.headersSent) {
-                res.status(200).json({ status: "Success", message: "Payment processed without redirection" });
-            }
+            return { status: "Success", reply: reply };
         }
     } catch (error) {
         if (!res.headersSent) {
@@ -144,5 +146,6 @@ exports.getPayment = async (req, res) => {
         } else {
             console.error('Error after headers sent:', error);
         }
+        return { status: "Failed", message: error.message };
     }
 };
