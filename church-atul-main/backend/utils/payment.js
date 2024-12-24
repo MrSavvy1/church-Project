@@ -1,5 +1,5 @@
 const paystack = (request) => {
-    const MySecretKey = process.env.PAYSTACK_SECRET_KEY
+    const MySecretKey = process.env.PAYSTACK_SECRET_KEY;
 
     const initializePayment = (form, mycallback) => {
         const options = {
@@ -7,33 +7,33 @@ const paystack = (request) => {
             headers: {
                 authorization: MySecretKey,
                 'content-type': 'application/json',
-                'cache-control' : 'no-cache'
+                'cache-control': 'no-cache'
             },
             form
-        }
+        };
 
         const callback = (error, response, body) => {
-            return mycallback(error, body)
-        }
-        request.post(options, callback)
-    }
+            return mycallback(error, body);
+        };
+        request.post(options, callback);
+    };
 
     const verifyPayment = (ref, mycallback) => {
         const options = {
-            url : 'https://api.paystack.co/transaction/verify/'+encodeURIComponent(ref),
+            url: 'https://api.paystack.co/transaction/verify/' + encodeURIComponent(ref),
             headers: {
                 authorization: MySecretKey,
-                'content-type' : 'application/json',
-                'cache-control' : 'no-cache'
+                'content-type': 'application/json',
+                'cache-control': 'no-cache'
             }
-        }
-        const callback = (error, response, body) =>{
-            return mycallback(error, body)
-        }
-        request(options, callback)
-    }
+        };
+        const callback = (error, response, body) => {
+            return mycallback(error, body);
+        };
+        request(options, callback);
+    };
 
-    return {initializePayment, verifyPayment};
-}
+    return { initializePayment, verifyPayment };
+};
 
 module.exports = paystack;
