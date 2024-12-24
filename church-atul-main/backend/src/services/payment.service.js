@@ -64,16 +64,18 @@ class PaymentService {
         });
     }
 
-    paymentReceipt(body) {
-        return new Promise(async (resolve, reject) => {
-            try {
-                const reference = body.reference;
-                const transaction = Payment.findOne({ reference: reference });
-                return resolve(transaction);
-            } catch (error) {
-                error.source = 'Payment Receipt';
-                return reject(error);
-            }
+    paymentReceipt({ reference }) {
+        return new Promise((resolve, reject) => {
+            verifyPayment(reference, (error, body) => {
+                if (error) {
+                    reject(error);
+                }
+                const response = JSON.parse(body);
+                if (!response.status) {
+                    reject(new Error('Transaction not found'));
+                }
+                resolve(response);
+            });
         });
     }
 }

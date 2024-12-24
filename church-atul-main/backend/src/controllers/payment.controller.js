@@ -16,6 +16,10 @@ module.exports = {
             console.log('type:', type);
             console.log('projectId:', projectId);
            
+            const church = await Church.findById(churchId);            
+
+            const newUser = await User.findById(userId);
+     /*       
             const newTransaction = await Transaction.create({
                 userId: userId,
                 churchId: churchId,
@@ -23,24 +27,11 @@ module.exports = {
                 amount: amount,
                 createdDate: new Date(),
                 type: type,
-                status: "Pedding"
+                status: "Pending"
             });
-
-            const church = await Church.findById(churchId);            
-
-            await Notification.create({
-                userId: userId,
-                notificationTitle: `${type} transaction completed`,
-                notificationType: `User`,
-                createdDate: new Date(),
-                description: `Your $${amount} ${type} has been completed for the ${church.churchName}`,
-                status: true
-            });
-
-
-            const newUser = await User.findById(userId);
-
-            res.status(200).json({ message: 'Transaction created', Transaction: newTransaction });
+*/
+            
+            res.status(200).json({ message: 'Transaction created' });
         } catch (error) {
             res.status(500).json({ error: 'Error', 'Server Error:': 'Failed' });
         }

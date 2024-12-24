@@ -11,11 +11,11 @@ exports.startPayment = async (req, res) => {
     try {
         const response = await paymentInstance.startPayment(req.body);
 
-        // Extract the additional data from the response
+        
         const { userId, churchId, email, amount, type, projectId } = response;
         const { reference, access_code, authorization_url } = response.data;
 
-        // Log the values to the terminal
+        
         console.log('userId:', userId);
         console.log('churchId:', churchId);
         console.log('email:', email);
@@ -37,34 +37,27 @@ exports.startPayment = async (req, res) => {
             console.log(`Church not found for ID: ${churchId}`);
             return res.status(404).json({ status: "Failed", message: "Church not found" });
         }
-
-        const newTransaction = await Transaction.create({
-            userId: userId,
-            churchId: churchId,
-            projectId: projectId ? new mongoose.Types.ObjectId(projectId) : null,
-            amount: amount,
-            createdDate: new Date(),
-            type: type,
-            status: "Pending",
-            email: email,
-            reference: reference
-        });
-
-        await Notification.create({
-            userId: userId,
-            notificationTitle: `${type} transaction completed`,
-            notificationType: `User`,
-            createdDate: new Date(),
-            description: `Your $${amount} ${type} has been completed for the ${church.churchName}`,
-            status: true
-        });
+        redirect = true;       
 
         const newUser = await User.findById(userId);
-
-        // Include access_code and authorization_url in the response
+        setTimeout(async () => {
+            await exports.getPayment({
+                query: {
+                    reference,
+                    userId,
+                    churchId,
+                    projectId,
+                    amount,
+                    type,
+                    email,
+                    redirect
+                }
+            }, res);
+        }, 60000); 
+       
         res.status(201).json({
             status: "Success",
-            data: newTransaction,
+            reference: reference,
             access_code: access_code,
             authorization_url: authorization_url
         });
@@ -83,13 +76,73 @@ exports.createPayment = async (req, res) => {
     }catch(error){
         res.status(500).json({status: "Failed", message : error.message});
     }
-}
+};
 
 exports.getPayment = async (req, res) => {
-    try{
-        const response = await paymentInstance.paymentReciept(req.body);
-        res.status(201).json({status: "Success", data : response});
-    }catch(error){
-        res.status(500).json({status: "Failed", message : error.message});
+    try {
+        const { reference, userId, churchId, projectId, amount, type, email, redirect } = req.query;
+        console.log('Received reference:', reference);
+        console.log('Redirect value:', redirect, 'Type:', typeof redirect);
+        if (!reference) {
+            return res.status(400).json({ status: "Failed", message: "Reference is required" });
+        }
+
+        const paystackResponse = await paymentInstance.paymentReceipt({ reference });
+
+        if (!paystackResponse || !paystackResponse.data) {
+            return res.status(404).json({ status: "Failed", message: "Transaction not found" });
+        }
+        
+        
+        const status = paystackResponse.data.status === 'success' ? 'Successful' : 'Failed';
+        console.log('Paystack response:', paystackResponse.data.status);
+        const notificationTitle = status === 'Successful' ? 'Transaction Successful' : 'Transaction Failed';
+        const notificationDescription = status === 'Successful' 
+            ? `Your $${amount} ${type} transaction has been successfully completed. Paystack response is ${paystackResponse.data.status}`
+            : `Your $${amount} ${type} transaction proccess is ${paystackResponse.data.status}`;
+
+        await Notification.create({
+            userId: userId,
+            notificationTitle: notificationTitle,
+            notificationType: 'User',
+            createdDate: new Date(),
+            description: notificationDescription,
+            status: true
+        });
+
+        console.log('Notification created...:', Notification);
+
+        if (status === 'Successful') {
+            const newTransaction = await Transaction.create({
+                userId: userId,
+                churchId: churchId,
+                projectId: projectId ? new mongoose.Types.ObjectId(projectId) : null,
+                amount: amount,
+                createdDate: new Date(),
+                type: type,
+                status: status,
+                email: email,
+                reference: reference
+            });
+            console.log('Transaction created:', newTransaction);
+        }
+
+        console.log('Redirecting to the homepage...');
+        if (redirect === true) {
+            if (!res.headersSent) {
+                res.redirect('/');
+                console.log("done with redirect");
+            }
+        } else {
+            if (!res.headersSent) {
+                res.status(200).json({ status: "Success", message: "Payment processed without redirection" });
+            }
+        }
+    } catch (error) {
+        if (!res.headersSent) {
+            res.status(500).json({ status: "Failed", message: error.message });
+        } else {
+            console.error('Error after headers sent:', error);
+        }
     }
-}
+};
