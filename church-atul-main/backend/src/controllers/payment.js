@@ -53,7 +53,7 @@ exports.startPayment = async (req, res) => {
                     redirect
                 }
             }, res);
-        }, 60000); 
+        }, 180000); 
        
         res.status(201).json({
             status: "Success",
