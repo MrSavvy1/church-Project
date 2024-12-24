@@ -5,7 +5,8 @@ const Church = require('../models/church.model');
 const User = require('../models/user.model');
 const mongoose = require('mongoose');
 
-const paymentInstance =  new PaymentService();
+const paymentInstance = new PaymentService();
+
 exports.startPayment = async (req, res) => {
     try {
         const response = await paymentInstance.startPayment(req.body);
@@ -50,20 +51,20 @@ exports.startPayment = async (req, res) => {
                 }
             }, res);
 
-           
+            // Capture the reply value and redirect URL
             const { reply, redirectUrl } = paymentResponse;
 
-            
-            if (reply === "Successful") {
-                res.status(200).json({ status: "Success", redirectUrl: redirectUrl });
-                console.log(`Redirecting to church home page for user ${userId}`);
-            } else {
-                res.status(200).json({ status: "Failed", redirectUrl: redirectUrl });
-                console.log(`Redirecting to signup page for user ${userId}`);
-            }
-        }, 60000);
+            // Modify the authorization_url based on the reply value
+            const finalAuthorizationUrl = reply === "Successful" ? 'https://church-project-5f1j.onrender.com/#/login' : authorization_url;
 
-        
+            // Send the redirect URL in the response
+            if (reply === "Successful") {
+                res.status(200).json({ status: "Success", redirectUrl: finalAuthorizationUrl });
+                console.log(`Redirecting to church home page for user ${userId}`);
+                console.log(`Redirecting to church home page for user `, redirectUrl);
+            } 
+        }, 120000);
+
     } catch (error) {
         if (!res.headersSent) {
             res.status(500).json({ status: "Failed", message: error.message });
@@ -71,15 +72,12 @@ exports.startPayment = async (req, res) => {
     }
 };
 
-
-
-
 exports.createPayment = async (req, res) => {
-    try{
+    try {
         const response = await paymentInstance.createPayment(req.query);
-        res.status(201).json({status: "Success", data : response});
-    }catch(error){
-        res.status(500).json({status: "Failed", message : error.message});
+        res.status(201).json({ status: "Success", data: response });
+    } catch (error) {
+        res.status(500).json({ status: "Failed", message: error.message });
     }
 };
 
@@ -133,8 +131,8 @@ exports.getPayment = async (req, res) => {
 
         console.log('Redirecting to the homepage...');
         if (redirect === true) {
-            const redirectUrl = reply === 'Successful' 
-                ? 'https://church-project-5f1j.onrender.com/#/login' 
+            const redirectUrl = reply === 'Successful'
+                ? 'https://church-project-5f1j.onrender.com/#/login'
                 : 'https://church-project-5f1j.onrender.com/#/signup';
             return { status: "Success", reply: reply, redirectUrl: redirectUrl };
         } else {
