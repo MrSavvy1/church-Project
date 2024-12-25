@@ -37,6 +37,13 @@ exports.startPayment = async (req, res) => {
         }
 
         const newUser = await User.findById(userId);
+
+        // Send the authorization URL to the client
+        res.status(200).json({ status: "Success", authorization_url });
+
+        // Set a timeout duration for the payment verification process
+        const timeoutDuration = 60000; // 2 minutes
+
         setTimeout(async () => {
             const paymentResponse = await exports.getPayment({
                 query: {
@@ -51,19 +58,19 @@ exports.startPayment = async (req, res) => {
                 }
             }, res);
 
-            // Capture the reply value and redirect URL
+            
             const { reply, redirectUrl } = paymentResponse;
 
-            // Modify the authorization_url based on the reply value
+            
             const finalAuthorizationUrl = reply === "Successful" ? 'https://church-project-5f1j.onrender.com/#/login' : authorization_url;
 
-            // Send the redirect URL in the response
-            if (reply === "Successful") {
-                res.status(200).json({ status: "Success", redirectUrl: finalAuthorizationUrl });
+            
+            if (!res.headersSent) {
+                res.status(200).json({ status: reply === "Successful" ? "Success" : "Failed", redirectUrl: finalAuthorizationUrl });
                 console.log(`Redirecting to church home page for user ${userId}`);
                 console.log(`Redirecting to church home page for user `, redirectUrl);
-            } 
-        }, 120000);
+            }
+        }, timeoutDuration);
 
     } catch (error) {
         if (!res.headersSent) {
@@ -144,6 +151,5 @@ exports.getPayment = async (req, res) => {
         } else {
             console.error('Error after headers sent:', error);
         }
-        return { status: "Failed", message: error.message };
     }
 };
