@@ -13,7 +13,7 @@ class PaymentService {
                     churchId: form.churchId
                 };
                 form.amount *= 100;
-                form.callback_url = 'https://church-project-5f1j.onrender.com/#/login';
+                form.callback_url = 'https://church-project-5f1j.onrender.com/#/payment/success';
 
                 initializePayment(form, (error, body) => {
                     if (error) {

@@ -63,6 +63,7 @@ exports.startPayment = async (req, res) => {
 
             
             const finalAuthorizationUrl = reply === "Successful" ? 'https://church-project-5f1j.onrender.com/#/login' : authorization_url;
+            console.log(`Redirecting to church home page for user `, redirectUrl);
 
             
             if (!res.headersSent) {
@@ -107,7 +108,7 @@ exports.getPayment = async (req, res) => {
         console.log('Paystack response:', paystackResponse.data.status);
         const notificationTitle = reply === 'Successful' ? 'Transaction Successful' : 'Transaction Failed';
         const notificationDescription = reply === 'Successful'
-            ? `Your $${amount} ${type} transaction has been successfully completed. Paystack response is ${paystackResponse.data.status}`
+            ? `Your $${amount} ${type} transaction has been successfully completed and response is ${paystackResponse.data.status}`
             : `Your $${amount} ${type} transaction process is ${paystackResponse.data.status}`;
 
         await Notification.create({
@@ -139,8 +140,8 @@ exports.getPayment = async (req, res) => {
         console.log('Redirecting to the homepage...');
         if (redirect === true) {
             const redirectUrl = reply === 'Successful'
-                ? 'https://church-project-5f1j.onrender.com/#/login'
-                : 'https://church-project-5f1j.onrender.com/#/signup';
+                ? 'https://church-project-5f1j.onrender.com/#/payment/success'
+                : 'https://google.com/';
             return { status: "Success", reply: reply, redirectUrl: redirectUrl };
         } else {
             return { status: "Success", reply: reply };

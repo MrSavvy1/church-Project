@@ -9,6 +9,7 @@ import TransactionList from "../views/TransactionList";
 import FullLayout from "../layouts/FullLayout.js";
 import MainLayout from "../layouts/MainLayout.js";
 import RolesPage from "../views/Roles.js";
+import PaymentSuccess from "../views/PaymentSuccess";
 
 
 const ThemeRoutes = [
@@ -31,6 +32,13 @@ const ThemeRoutes = [
     children: [
       { path: "/", element: <Navigate to="/login" /> },
       { path: "/login", exact: true, element: <Login /> },
+    ],
+  }, 
+  {
+    path: "/payment",
+    element: <MainLayout />,
+    children: [
+      { path: "success", exact: true, element: <PaymentSuccess /> },
     ],
   },
 ];
