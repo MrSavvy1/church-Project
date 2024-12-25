@@ -38,12 +38,9 @@ exports.startPayment = async (req, res) => {
 
         const newUser = await User.findById(userId);
 
-        // Send the authorization URL to the client
         res.status(200).json({ status: "Success", authorization_url });
 
-        // Set a timeout duration for the payment verification process
-        const timeoutDuration = 60000; // 2 minutes
-
+        const timeoutDuration = 60000; 
         setTimeout(async () => {
             const paymentResponse = await exports.getPayment({
                 query: {
