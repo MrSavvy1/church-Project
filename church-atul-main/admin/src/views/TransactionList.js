@@ -3,6 +3,7 @@ import axios from "axios";
 import { Row, Col, Card, CardBody, Button, Input, FormGroup } from "reactstrap";
 import { toast } from "react-toastify";
 import DataTable from 'react-data-table-component';
+import { format } from 'date-fns';
 import * as XLSX from 'xlsx';
 import Logo from '../assets/images/logos/logo.png';
 
@@ -38,7 +39,6 @@ const TransactionList = () => {
                     endDateObj = new Date(endDate);
                 }
                 isDateRangeMatch = itemDate >= startDateObj && itemDate <= endDateObj;
-                console.log("adonis-", itemDate, "--", startDateObj, "--", endDateObj);
             }
 
             return (
@@ -72,9 +72,30 @@ const TransactionList = () => {
         },
         {
             name: 'Amount',
-            selector: row => (row.amount).toString().replace(/\B(?=(\d{3})+(?!\d))/g, ','),
+            selector: row => {
+                const amount = parseFloat(row.amount) || 0;
+                return user.role === 'super' ? (amount * 0.98).toFixed(2).toString().replace(/\B(?=(\d{3})+(?!\d))/g, ',') : (amount * 0.98).toFixed(2).toString().replace(/\B(?=(\d{3})+(?!\d))/g, ',');
+            },
             sortable: true,
         },
+        ...(user.role === 'super' ? [
+            {
+                name: 'Commission',
+                selector: row => {
+                    const amount = parseFloat(row.amount) || 0;
+                    return (amount * 0.02).toFixed(2).toString().replace(/\B(?=(\d{3})+(?!\d))/g, ',');
+                },
+                sortable: true,
+            },
+            {
+                name: 'Total Amount',
+                selector: row => {
+                    const amount = parseFloat(row.amount) || 0;
+                    return amount.toFixed(2).toString().replace(/\B(?=(\d{3})+(?!\d))/g, ',');
+                },
+                sortable: true,
+            }
+        ] : []),
         {
             name: 'Type',
             selector: row => row.type,
@@ -82,13 +103,28 @@ const TransactionList = () => {
         },
         {
             name: 'Created',
-            selector: row => row.created,
+            selector: row => format(new Date(row.created), 'dd-MM-yyyy p'),
             sortable: true,
         },
     ];
 
     const exportToExcel = () => {
-        const worksheet = XLSX.utils.json_to_sheet(filteredItems);
+        const filteredForExcel = filteredItems.map(item => {
+            const amount = parseFloat(item.amount) || 0;
+            return {
+                userName: item.userName,
+                church: item.church,
+                amount: user.role === 'super' ? amount.toFixed(2) : (amount * 0.98).toFixed(2),
+                ...(user.role === 'super' ? {
+                    commission: (amount * 0.02).toFixed(2),
+                    totalAmount: amount.toFixed(2)
+                } : {}),
+                type: item.type,
+                created: format(new Date(item.created), 'p dd-MM-yyyy')
+            };
+        });
+
+        const worksheet = XLSX.utils.json_to_sheet(filteredForExcel);
         const workbook = XLSX.utils.book_new();
         XLSX.utils.book_append_sheet(workbook, worksheet, "Transactions");
         XLSX.writeFile(workbook, "Transactions.xlsx");
@@ -328,7 +364,12 @@ const TransactionList = () => {
                                 <hr />
                                 <DataTable columns={columns} data={filteredItems} defaultSortFieldId={1} />
                                 <hr />
-                                <div className="text-end fw-bold fs-5 mb-2">Total Amount: {(filteredItems.reduce((accumulator, currentValue) => parseInt(accumulator) + parseInt(currentValue['amount']), 0)).toLocaleString()} </div>
+                                <div className="text-end fw-bold fs-5 mb-2">
+                                    Total Amount: {(filteredItems.reduce((accumulator, currentValue) => {
+                                        const amount = parseFloat(currentValue.amount) || 0;
+                                        return accumulator + (amount * (user.role === 'super' ? 1 : 0.98));
+                                    }, 0)).toLocaleString()}
+                                </div>
                                 <div className="text-end fw-bold">{formattedDate}</div>
                             </div>
                         </CardBody>
