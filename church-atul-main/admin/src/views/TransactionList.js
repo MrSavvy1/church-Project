@@ -108,16 +108,24 @@ const TransactionList = () => {
         },
     ];
 
+    const formatAmount = (amount) => {
+        return new Intl.NumberFormat('en-US', { style: 'decimal', minimumFractionDigits: 2 }).format(amount);
+    };
+
+    const capitalizeHeaders = (headers) => {
+        return headers.map(header => header.toUpperCase());
+    };
+
     const exportToExcel = () => {
         const filteredForExcel = filteredItems.map(item => {
             const amount = parseFloat(item.amount) || 0;
             return {
                 userName: item.userName,
                 church: item.church,
-                amount: user.role === 'super' ? amount.toFixed(2) : (amount * 0.98).toFixed(2),
+                amount: user.role === 'super' ? formatAmount(amount) : formatAmount(amount * 0.98),
                 ...(user.role === 'super' ? {
-                    commission: (amount * 0.02).toFixed(2),
-                    totalAmount: amount.toFixed(2)
+                    commission: formatAmount(amount * 0.02),
+                    totalAmount: formatAmount(amount)
                 } : {}),
                 type: item.type,
                 created: format(new Date(item.created), 'p dd-MM-yyyy')
@@ -125,6 +133,8 @@ const TransactionList = () => {
         });
 
         const worksheet = XLSX.utils.json_to_sheet(filteredForExcel);
+        const headers = capitalizeHeaders(Object.keys(filteredForExcel[0]));
+        XLSX.utils.sheet_add_aoa(worksheet, [headers], { origin: 'A1' });
         const workbook = XLSX.utils.book_new();
         XLSX.utils.book_append_sheet(workbook, worksheet, "Transactions");
         XLSX.writeFile(workbook, "Transactions.xlsx");
