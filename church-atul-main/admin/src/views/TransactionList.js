@@ -216,8 +216,8 @@ const TransactionList = () => {
                             <option value="">
                                 Select Type
                             </option>
-                            <option value="Offer">
-                                Offer
+                            <option value="Offering">
+                                Offering
                             </option>
                             <option value="Tithe">
                                 Tithe
