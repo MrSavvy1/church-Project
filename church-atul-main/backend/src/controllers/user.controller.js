@@ -17,9 +17,10 @@ const sendEmailController = require('../controllers/sendEmail');
 const Role = require('../models/role.model');
 const storage = multer.memoryStorage(); 
 const upload = multer({ storage: storage }).single('avatarUrl');
+//require('dotenv').config();
 
 const admin = require('firebase-admin');
-const serviceAccount = require('./firebaseServiceAccountKey.json'); 
+const serviceAccount = JSON.parse(process.env.FIREBASE_SERVICE_ACCOUNT_KEY);
 admin.initializeApp({
   credential: admin.credential.cert(serviceAccount),
    databaseURL: 'https://church-5a085-default-rtdb.firebaseio.com'
