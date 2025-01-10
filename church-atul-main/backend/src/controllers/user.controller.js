@@ -3,7 +3,7 @@ const User = require('../models/user.model');
 const jwt = require('jsonwebtoken');
 const dotenv = require('dotenv');
 const axios = require('axios');
-const multer = require('multer'); // Import multer
+const multer = require('multer'); 
 const path = require('path');
 const FormData = require('form-data');
 const { verifyIdToken } = require('apple-signin-auth');
@@ -17,6 +17,39 @@ const sendEmailController = require('../controllers/sendEmail');
 const Role = require('../models/role.model');
 const storage = multer.memoryStorage(); 
 const upload = multer({ storage: storage }).single('avatarUrl');
+
+const admin = require('firebase-admin');
+const serviceAccount = require('./firebaseServiceAccountKey.json'); 
+admin.initializeApp({
+  credential: admin.credential.cert(serviceAccount),
+   databaseURL: 'https://church-5a085-default-rtdb.firebaseio.com'
+});
+
+const sendPushNotification = (registrationToken, message) => {
+  const payload = {
+    notification: {
+      title: message.title,
+      body: message.body,
+    },
+    data: message.data,
+  };
+
+  console.log('Sending payload:', payload); // Log the payload for debugging
+
+  return admin.messaging().send({
+    token: registrationToken,
+    notification: payload.notification,
+    data: payload.data,
+  })
+    .then(response => {
+      console.log('Successfully sent message:', response);
+      return { success: true, response };
+    })
+    .catch(error => {
+      console.log('Error sending message:', error);
+      return { success: false, error };
+    });
+};
 
 module.exports = {
   async signup(req, res) {
@@ -124,6 +157,28 @@ module.exports = {
       }
     });
   },
+
+  async sendNotification(req, res) {
+    try {
+      const { registrationToken, title, body, data } = req.body;
+      const message = {
+        title: title,
+        body: body,
+        data: data
+      };
+  
+      const result = await sendPushNotification(registrationToken, message);
+  
+      if (result.success) {
+        res.status(200).json({ message: 'Notification sent successfully', response: result.response });
+      } else {
+        res.status(400).json({ error: 'Failed to send notification', message: result.error.message });
+      }
+    } catch (error) {
+      console.error('Error sending notification:', error);
+      res.status(500).json({ error: 'Server Error', message: 'Failed to send notification' });
+    }
+  }, 
 
   async signupAuth(req, res) {
     try {
