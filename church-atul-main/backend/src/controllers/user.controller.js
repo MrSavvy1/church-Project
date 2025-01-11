@@ -20,7 +20,20 @@ const upload = multer({ storage: storage }).single('avatarUrl');
 //require('dotenv').config();
 
 const admin = require('firebase-admin');
-const serviceAccount = JSON.parse(process.env.FIREBASE_SERVICE_ACCOUNT_KEY);
+// const serviceAccount = JSON.parse(process.env.FIREBASE_SERVICE_ACCOUNT_KEY);
+const serviceAccount = {
+  type: process.env.FIREBASE_TYPE,
+  project_id: process.env.FIREBASE_PROJECT_ID,
+  private_key_id: process.env.FIREBASE_PRIVATE_KEY_ID,
+  private_key: process.env.FIREBASE_PRIVATE_KEY.replace(/\\n/g, '\n'),
+  client_email: process.env.FIREBASE_CLIENT_EMAIL,
+  client_id: process.env.FIREBASE_CLIENT_ID,
+  auth_uri: process.env.FIREBASE_AUTH_URI,
+  token_uri: process.env.FIREBASE_TOKEN_URI,
+  auth_provider_x509_cert_url: process.env.FIREBASE_AUTH_PROVIDER_X509_CERT_URL,
+  client_x509_cert_url: process.env.FIREBASE_CLIENT_X509_CERT_URL
+};
+
 admin.initializeApp({
   credential: admin.credential.cert(serviceAccount),
   databaseURL: process.env.FIREBASE_DATABASE_URL
@@ -35,7 +48,7 @@ const sendPushNotification = (registrationToken, message) => {
     data: message.data,
   };
 
-  console.log('Sending payload:', payload); // Log the payload for debugging
+  console.log('Sending payload:', payload); 
 
   return admin.messaging().send({
     token: registrationToken,
@@ -51,6 +64,29 @@ const sendPushNotification = (registrationToken, message) => {
       return { success: false, error };
     });
 };
+
+const sendSMS = async (phone, text, from) => {
+  const url = 'https://api.wirepick.com/httpsms/send';
+  const params = {
+    client: process.env.WIREPICK_CLIENT_ID,
+    password: process.env.WIREPICK_PASSWORD,
+    phone: phone,
+    text: text,
+    from: from,
+  };
+
+  try {
+    const response = await axios.get(url, { params });
+    console.log('SMS sent successfully:', response.data);
+    return { success: true, data: response.data };
+  } catch (error) {
+    console.error('Error sending SMS:', error);
+    return { success: false, error: error.message };
+  }
+};
+// Example usage of sendSMS function
+// sendSMS('1234567890', 'Hello from Wirepick', 'SenderID');
+
 
 module.exports = {
   async signup(req, res) {
@@ -150,7 +186,7 @@ module.exports = {
 
         await transporter.sendMail(mailOptions);
         console.log('Verification email sent.');
-
+        await sendSMS(phonenumber, `Your verification code is ${verifyCode}`, 'Monegliseci');
         res.status(201).json({ message: 'Signup successful', user: newUser, token: token });
       } catch (error) {
         console.log('Signup error:', error);
@@ -158,6 +194,8 @@ module.exports = {
       }
     });
   },
+
+  
 
   async sendNotification(req, res) {
     try {
