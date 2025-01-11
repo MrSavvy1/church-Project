@@ -10,12 +10,12 @@ import FullLayout from "../layouts/FullLayout.js";
 import MainLayout from "../layouts/MainLayout.js";
 import RolesPage from "../views/Roles.js";
 import PaymentSuccess from "../views/PaymentSuccess";
-
+import PrivateRoute from "./PrivateRoute"; 
 
 const ThemeRoutes = [
   {
     path: "/admin",
-    element: <FullLayout />,
+    element: <PrivateRoute><FullLayout /></PrivateRoute>,
     children: [
       { path: "/admin/starter", exact: true, element: <Starter /> },
       { path: "/admin/user_list", exact: true, element: <UserList /> },
@@ -33,12 +33,12 @@ const ThemeRoutes = [
       { path: "/", element: <Navigate to="/login" /> },
       { path: "/login", exact: true, element: <Login /> },
     ],
-  }, 
+  },
   {
     path: "/payment",
     element: <MainLayout />,
     children: [
-      { path: "success", exact: true, element: <PaymentSuccess /> },
+      { path: "success", exact: true, element: <PrivateRoute><PaymentSuccess /></PrivateRoute> }, 
     ],
   },
 ];
