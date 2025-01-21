@@ -129,7 +129,7 @@ const TransactionList = () => {
                 ...(user.role === 'super' ? {
                     commission: formatAmount(amount * 0.02),
                     totalAmount: formatAmount(amount),
-                    email: item.email
+                    email: item.userEmail
                 } : {}),
                 type: item.type,
                 created: format(new Date(item.created), 'p dd-MM-yyyy')
