@@ -236,6 +236,7 @@ const TransactionList = () => {
                     <FormGroup>
                         <Input
                             name="startDate"
+                             placeholder="Start Date"
                             type="date"
                             value={startDate}
                             onChange={(e) => setStartDate(e.target.value)}
@@ -246,6 +247,7 @@ const TransactionList = () => {
                     <FormGroup>
                         <Input
                             name="endDate"
+                            placeholder="End Date"
                             type="date"
                             value={endDate}
                             onChange={(e) => setEndDate(e.target.value)}
