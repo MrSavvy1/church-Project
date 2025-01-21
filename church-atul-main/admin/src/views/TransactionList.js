@@ -39,6 +39,9 @@ const TransactionList = () => {
                     endDateObj = new Date(endDate);
                 }
                 isDateRangeMatch = itemDate >= startDateObj && itemDate <= endDateObj;
+                if (startDate === endDate) {
+                    isDateRangeMatch = itemDate.toDateString() === startDateObj.toDateString();
+                }
             }
 
             return (
@@ -125,7 +128,8 @@ const TransactionList = () => {
                 amount: user.role === 'super' ? formatAmount(amount) : formatAmount(amount * 0.98),
                 ...(user.role === 'super' ? {
                     commission: formatAmount(amount * 0.02),
-                    totalAmount: formatAmount(amount)
+                    totalAmount: formatAmount(amount),
+                    email: item.email
                 } : {}),
                 type: item.type,
                 created: format(new Date(item.created), 'p dd-MM-yyyy')

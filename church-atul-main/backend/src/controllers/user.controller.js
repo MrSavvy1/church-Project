@@ -56,7 +56,7 @@ const sendPushNotification = (registrationToken, message) => {
     data: payload.data,
   })
     .then(response => {
-      console.log('Successfully sent message:', response);
+      console.log(response);
       return { success: true, response };
     })
     .catch(error => {
@@ -66,26 +66,29 @@ const sendPushNotification = (registrationToken, message) => {
 };
 
 const sendSMS = async (phone, text, from) => {
+  const clientId = 'JPAYEWA';
+  const password = 'Marq@ize00';
   const url = 'https://api.wirepick.com/httpsms/send';
   const params = {
-    client: process.env.WIREPICK_CLIENT_ID,
-    password: process.env.WIREPICK_PASSWORD,
+    client: clientId,
+    password: password,
     phone: phone,
     text: text,
     from: from,
   };
 
+  console.log('Client ID:', clientId);
+  console.log('Password:', password);
+
   try {
     const response = await axios.get(url, { params });
-    console.log('SMS sent successfully:', response.data);
+    console.log(response.data);
     return { success: true, data: response.data };
   } catch (error) {
     console.error('Error sending SMS:', error);
     return { success: false, error: error.message };
   }
 };
-// Example usage of sendSMS function
-// sendSMS('1234567890', 'Hello from Wirepick', 'SenderID');
 
 
 module.exports = {
@@ -186,7 +189,7 @@ module.exports = {
 
         await transporter.sendMail(mailOptions);
         console.log('Verification email sent.');
-        await sendSMS(phonenumber, `Your verification code is ${verifyCode}`, 'Monegliseci');
+        await sendSMS(phonenumber, `Your verification code is ${verifyCode}`, 'MON EGLISE');
         res.status(201).json({ message: 'Signup successful', user: newUser, token: token });
       } catch (error) {
         console.log('Signup error:', error);
@@ -195,7 +198,34 @@ module.exports = {
     });
   },
 
+  async sendOtp(req, res) {
+    try {
+      const { phoneNumber } = req.body;
   
+      const user = await User.findOne({ phoneNumber: phoneNumber });
+  
+      if (!user) {
+        return res.status(404).json({ message: 'User not found' });
+      }
+  
+      const verifyCode = parseInt(Math.random() * 899999) + 100000;
+
+      const token = jwt.sign({ userId: user._id }, process.env.JWT_SECRET_KEY, { expiresIn: '6h' });
+
+
+      await User.findByIdAndUpdate(user._id, {
+          verifyCode: verifyCode
+      });
+
+  
+      await sendSMS(phoneNumber, `Your OTP code is ${verifyCode}`, 'MON EGLISE');
+  
+      res.status(200).json({ message: 'OTP sent successfully' });
+    } catch (error) {
+      console.error('Error sending OTP:', error);
+      res.status(500).json({ error: 'Server Error', message: 'Failed to send OTP' });
+    }
+  },  
 
   async sendNotification(req, res) {
     try {
@@ -335,6 +365,7 @@ async resendVerifyCode(req, res) {
         };
 
         await transporter.sendMail(mailOptions);
+        await sendSMS(phonenumber, `Your verification code is ${verifyCode}`, 'MON EGLISE');
 
         res.status(201).json({ message: 'VerifyResent', token: token });
     } catch (error) {
@@ -382,8 +413,8 @@ async resendVerifyCode(req, res) {
     };
 
     await transporter.sendMail(mailOptions);
-
-    // Save the verification code to the user's record (or handle it as needed)
+    await sendSMS(phonenumber, `Your verification code is ${verifyCode} From  Tom Emmanuel`, 'MON EGLISE');
+   
     user.resetPasswordToken = verifyCode;
     user.resetPasswordExpires = Date.now() + 3600000; // 1 hour
     await user.save();

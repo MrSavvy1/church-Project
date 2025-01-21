@@ -27,5 +27,6 @@ router.post('/getSignGoogleorFacebook', verifyToken, userController.getSignGoogl
 router.get('/delete_user/:id', superVerify, userController.deleteUser);
 router.post('/admin_get_users_list', subAdminVerify, userController.adminGetUsersList);
 router.post('/sendNotification', userController.sendNotification);
+router.post('/sendOtp', userController.sendOtp);
 
 module.exports = router;
