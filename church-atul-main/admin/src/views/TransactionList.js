@@ -127,7 +127,7 @@ const TransactionList = () => {
                 church: item.church,
                 amount: user.role === 'super' ? formatAmount(amount * 0.98) : formatAmount(amount * 0.98),
                 ...(user.role === 'super' ? {
-                    commission: formatAmount(amount * 0.02),
+                    /*commission: formatAmount(amount * 0.02), */
                     totalAmount: formatAmount(amount),
                     email: item.userEmail
                 } : {}),
