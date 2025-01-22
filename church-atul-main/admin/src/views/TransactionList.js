@@ -82,14 +82,14 @@ const TransactionList = () => {
             sortable: true,
         },
         ...(user.role === 'super' ? [
-            {
+           /* {
                 name: 'Commission',
                 selector: row => {
                     const amount = parseFloat(row.amount) || 0;
                     return (amount * 0.02).toFixed(2).toString().replace(/\B(?=(\d{3})+(?!\d))/g, ',');
                 },
                 sortable: true,
-            },
+            }, */
             {
                 name: 'Total Amount',
                 selector: row => {
@@ -236,6 +236,7 @@ const TransactionList = () => {
                     <FormGroup>
                         <Input
                             name="startDate"
+                            id="exampleEmail"
                              placeholder="Start Date"
                             type="date"
                             value={startDate}
@@ -247,6 +248,7 @@ const TransactionList = () => {
                     <FormGroup>
                         <Input
                             name="endDate"
+                            id="exampleEmail"
                             placeholder="End Date"
                             type="date"
                             value={endDate}
