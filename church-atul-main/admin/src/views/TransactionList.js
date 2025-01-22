@@ -16,7 +16,7 @@ const TransactionList = () => {
     const [amount, setAmount] = useState('');
     const [type, setType] = useState('');
     const [startDate, setStartDate] = useState('');
-    const [endDate, setEndDate] = useState('');
+    const [endDate, setEndDate] = useState( new Date());
     let _user = localStorage.getItem('user');
     let user = JSON.parse(_user);
     let _permission = localStorage.getItem('permission');
@@ -37,6 +37,7 @@ const TransactionList = () => {
                 let endDateObj = new Date();
                 if (endDate !== '') {
                     endDateObj = new Date(endDate);
+                    endDateObj.setHours(23, 59, 59, 999);
                 }
                 isDateRangeMatch = itemDate >= startDateObj && itemDate <= endDateObj;
                 if (startDate === endDate) {
@@ -236,8 +237,8 @@ const TransactionList = () => {
                     <FormGroup>
                         <Input
                             name="startDate"
-                            id="exampleEmail"
-                             placeholder="Start Date"
+                            id="startDate"
+                            placeholder="Start Date"
                             type="date"
                             value={startDate}
                             onChange={(e) => setStartDate(e.target.value)}
@@ -248,7 +249,7 @@ const TransactionList = () => {
                     <FormGroup>
                         <Input
                             name="endDate"
-                            id="exampleEmail"
+                            id="endDate"
                             placeholder="End Date"
                             type="date"
                             value={endDate}
