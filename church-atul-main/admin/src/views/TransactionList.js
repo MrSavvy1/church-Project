@@ -16,7 +16,7 @@ const TransactionList = () => {
     const [amount, setAmount] = useState('');
     const [type, setType] = useState('');
     const [startDate, setStartDate] = useState('');
-    const [endDate, setEndDate] = useState(new Date());
+    const [endDate, setEndDate] = useState('');
     let _user = localStorage.getItem('user');
     let user = JSON.parse(_user);
     let _permission = localStorage.getItem('permission');
