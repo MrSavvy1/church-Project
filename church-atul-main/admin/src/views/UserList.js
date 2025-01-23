@@ -399,7 +399,8 @@ const UserList = () => {
                   name="select"
                   type="select"
                   value={church}
-                  disabled={user.role == "super" ? "true" : "false"}
+                  disabled={user.role !== "super"}
+                  /*disabled={user.role == "super" ? "true" : "false"}*/
                   onChange={(e) => setChurch(e.target.value)}
                 >
                   {churchData?.map((item, index) => (
