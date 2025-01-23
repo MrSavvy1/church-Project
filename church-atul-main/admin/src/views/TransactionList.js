@@ -128,7 +128,7 @@ const TransactionList = () => {
                 church: item.church,
                 amount: user.role === 'super' ? formatAmount(amount * 0.98) : formatAmount(amount),
                 ...(user.role === 'super' ? {
-                    /*commission: formatAmount(amount * 0.02), */
+                    commission: formatAmount(amount * 0.02), 
                     totalAmount: formatAmount(amount),
                     email: item.userEmail
                 } : {}),
@@ -386,7 +386,7 @@ const TransactionList = () => {
                                 <div className="text-end fw-bold fs-5 mb-2">
                                     Total Amount: {(filteredItems.reduce((accumulator, currentValue) => {
                                         const amount = parseFloat(currentValue.amount) || 0;
-                                        return accumulator + (amount * (user.role === 'super' ? 1 : 0.98));
+                                        return accumulator + (amount /*(user.role === 'super' ? 1 : 0.98) */);
                                     }, 0)).toLocaleString()}
                                 </div>
                                 <div className="text-end fw-bold">{formattedDate}</div>
