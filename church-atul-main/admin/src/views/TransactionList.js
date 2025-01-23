@@ -78,7 +78,7 @@ const TransactionList = () => {
             name: 'Amount',
             selector: row => {
                 const amount = parseFloat(row.amount) || 0;
-                return user.role === 'super' ? (amount * 0.98).toFixed(2).toString().replace(/\B(?=(\d{3})+(?!\d))/g, ',') : (amount * 0.98).toFixed(2).toString().replace(/\B(?=(\d{3})+(?!\d))/g, ',');
+                return user.role === 'super' ? (amount * 0.98).toFixed(2).toString().replace(/\B(?=(\d{3})+(?!\d))/g, ',') : (amount).toFixed(2).toString().replace(/\B(?=(\d{3})+(?!\d))/g, ',');
             },
             sortable: true,
         },
