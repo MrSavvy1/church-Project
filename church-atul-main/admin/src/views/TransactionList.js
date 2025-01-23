@@ -83,14 +83,14 @@ const TransactionList = () => {
             sortable: true,
         },
         ...(user.role === 'super' ? [
-           /* {
+            {
                 name: 'Commission',
                 selector: row => {
                     const amount = parseFloat(row.amount) || 0;
                     return (amount * 0.02).toFixed(2).toString().replace(/\B(?=(\d{3})+(?!\d))/g, ',');
                 },
                 sortable: true,
-            }, */
+            }, 
             {
                 name: 'Total Amount',
                 selector: row => {
@@ -126,7 +126,7 @@ const TransactionList = () => {
             return {
                 userName: item.userName,
                 church: item.church,
-                amount: user.role === 'super' ? formatAmount(amount * 0.98) : formatAmount(amount * 0.98),
+                amount: user.role === 'super' ? formatAmount(amount * 0.98) : formatAmount(amount),
                 ...(user.role === 'super' ? {
                     /*commission: formatAmount(amount * 0.02), */
                     totalAmount: formatAmount(amount),
