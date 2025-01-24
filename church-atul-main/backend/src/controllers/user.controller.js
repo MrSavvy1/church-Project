@@ -388,7 +388,7 @@ async resendVerifyCode(req, res) {
         await transporter.sendMail(mailOptions);
         */
 
-        const emailHtml = `<h1>Hi </h1>
+        const emailHtml = `<h1>Hi ${user.userName}</h1>
                            <p>Please enter the following verification code to verify this signup attempt:</p>
                            <h2>${verifyCode}</h2>
                            <p>Don't recognize this signup attempt?</p>
@@ -450,10 +450,10 @@ async resendVerifyCode(req, res) {
     await transporter.sendMail(mailOptions);
     */
    
-    const emailHtml = `<h1>Hi </h1>
+    const emailHtml = `<h1>Hi ${user.userName}</h1>
                            <p>Please enter the following verification code to verify this password change attempt:</p>
                            <h2>${verifyCode}</h2>
-                           <p>Don't recognize this signup attempt?</p>
+                           <p>Don't recognize this password change attempt?</p>
                            <p>Regards,<br>The Monegliseci Team</p>`;
 
         await resend.emails.send({
@@ -534,56 +534,65 @@ async resendVerifyCode(req, res) {
 
   async signin(req, res) {
     try {
-
       const { useremail, password } = req.body;
-
-      const user = await User.findOne({ $and: [
-        {
-          $or: [
-            { userEmail: { $regex: new RegExp(useremail, 'i') } },
-            { phoneNumber: { $regex: new RegExp(useremail, 'i') } }
-          ]
-        },
-        { status: true }
-      ]});
-
-      console.log(user)
+  
+      const user = await User.findOne({
+        $and: [
+          {
+            $or: [
+              { userEmail: { $regex: new RegExp(useremail, 'i') } },
+              { phoneNumber: useremail }, // Direct match for phone number
+            ],
+          },
+          { status: true },
+        ],
+      });
+  
       if (!user) {
-        return res.status(401).json({ message: `EnterValidEmailorPhone`, status: 'Failed' });
+        return res.status(401).json({ message: 'Enter a valid email or phone number.', status: 'Failed' });
       }
-
-      
+  
       const isPasswordValid = await bcrypt.compare(password, user.password);
-
-      console.log(isPasswordValid)
-
+  
       if (!isPasswordValid) {
-        return res.status(401).json({ message: 'PasswordIncorrect', status: 'Failed' });
+        return res.status(401).json({ message: 'Password is incorrect.', status: 'Failed' });
       }
-      
+  
       if (!user.signupComplete) {
         return res.status(401).json({ message: 'User needs to complete verification', error: 'Incomplete signup' });
       }
-
+  
       const token = jwt.sign({ userId: user._id }, process.env.JWT_SECRET_KEY, { expiresIn: '6h' });
-      const emailHtml = `<h1>Hi </h1>
-                           <p>Please enter the following verification code to verify this login attempt:</p>
-                           <h2>${verifyCode}</h2>
-                           <p>Don't recognize this signup attempt?</p>
-                           <p>Regards,<br>The Monegliseci Team</p>`;
-
+  
+      const verifyCode = Math.floor(100000 + Math.random() * 900000); // Generate a 6-digit code
+  
+      const emailHtml = `
+        <h1>Hi ${user.userName}</h1>
+        <p>Please enter the following verification code to verify this login attempt:</p>
+        <h2>${verifyCode}</h2>
+        <p>Don't recognize this login attempt?</p>
+        <p>Regards,<br>The Monegliseci Team</p>`;
+  
+      try {
         await resend.emails.send({
           from: '"Monegliseci Team" <no-reply@monegliseci.com>',
-          to: useremail,
-          subject: "Sign up to your monegliseci.com account",
+          to: user.userEmail, // Ensure correct user email
+          subject: 'Login Attempt to your monegliseci.com account?',
           html: emailHtml,
         });
-    
-      res.status(200).json({ message: 'Succeed', user: user, token: token });
+      } catch (emailError) {
+        console.error('Email sending failed:', emailError);
+        return res.status(500).json({ message: 'Failed to send verification email', status: 'Error' });
+      }
+  
+      const { password: _, ...safeUser } = user.toObject(); // Exclude password
+      res.status(200).json({ message: 'Succeed', user: safeUser, token });
     } catch (error) {
-      res.status(500).json({ error: 'Error', 'Server Error:': 'Failed' });
+      console.error('Server error:', error);
+      res.status(500).json({ error: 'Server Error', message: 'An unexpected error occurred.' });
     }
   },
+  
 
   async signinWithGoogle(req, res) {
     try {
