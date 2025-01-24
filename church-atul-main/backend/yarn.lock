@@ -4260,10 +4260,10 @@ require-directory@^2.1.1:
   resolved "https://registry.npmjs.org/require-directory/-/require-directory-2.1.1.tgz"
   integrity sha512-fGxEI7+wsG9xrvdjsrlmL22OMTTiHRwAMroiEeMgq8gzoLC/PQr7RsRDSTLUg/bZAZtF+TVIkHc6/4RIKrui+Q==
 
-resend@^4.0.1:
-  version "4.0.1"
-  resolved "https://registry.npmjs.org/resend/-/resend-4.0.1.tgz"
-  integrity sha512-EkCRfzKw9JX7N75L+0BC8oXohDBLhlhl4w7AgrkEW2TAsOMBsVcbQHPe8cRWP6Ea7KDhD158TsNjbCBcohed5A==
+resend@^4.1.1:
+  version "4.1.1"
+  resolved "https://registry.npmjs.org/resend/-/resend-4.1.1.tgz"
+  integrity sha512-nkcRpIOgPb3sFPA/GyOTr6Vmlrkhwsu+XlC20kKbbebOfw0WbAjbBbJ1m4AcjKOkPf57O4DH9Bnbxi9i18JYng==
   dependencies:
     "@react-email/render" "1.0.1"
 

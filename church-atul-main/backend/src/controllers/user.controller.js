@@ -7,8 +7,11 @@ const multer = require('multer');
 const path = require('path');
 const FormData = require('form-data');
 const { verifyIdToken } = require('apple-signin-auth');
+const { Resend } = require('resend');
 
 dotenv.config();
+
+const resend = new Resend(process.env.RESEND_API_KEY);
 
 const nodemailer = require('nodemailer');
 const Transaction = require('../models/transaction.model');
@@ -20,6 +23,7 @@ const upload = multer({ storage: storage }).single('avatarUrl');
 //require('dotenv').config();
 
 const admin = require('firebase-admin');
+
 // const serviceAccount = JSON.parse(process.env.FIREBASE_SERVICE_ACCOUNT_KEY);
 const serviceAccount = {
   type: process.env.FIREBASE_TYPE,
@@ -167,7 +171,8 @@ module.exports = {
 
         const token = jwt.sign({ userId: newUser._id }, process.env.JWT_SECRET_KEY, { expiresIn: '6h' });
 
-        // send Email to the user for checking 6 digits verify code
+        // send Email to the user for checking 6 digits verify code using nodemailer smtp
+        /*
         const transporter = nodemailer.createTransport({
           service: 'gmail',
           auth: {
@@ -188,6 +193,22 @@ module.exports = {
         };
 
         await transporter.sendMail(mailOptions);
+        */
+
+        
+        const emailHtml = `<h1>Hi ${userName}</h1>
+                           <p>Please enter the following verification code to verify this signup attempt:</p>
+                           <h2>${verifyCode}</h2>
+                           <p>Don't recognize this signup attempt?</p>
+                           <p>Regards,<br>The Monegliseci Team</p>`;
+
+        await resend.emails.send({
+          from: '"Monegliseci Team" <no-reply@monegliseci.com>',
+          to: useremail,
+          subject: "Sign up to your monegliseci.com account",
+          html: emailHtml,
+        });
+
         console.log('Verification email sent.');
         await sendSMS(phonenumber, `Your verification code is ${verifyCode}`, 'MON EGLISE');
         res.status(201).json({ message: 'Signup successful', user: newUser, token: token });
@@ -342,7 +363,7 @@ async resendVerifyCode(req, res) {
             verifyCode: verifyCode
         });
 
-        
+        /*
         const transporter = nodemailer.createTransport({
             service: 'gmail',
             auth: {
@@ -365,7 +386,23 @@ async resendVerifyCode(req, res) {
         };
 
         await transporter.sendMail(mailOptions);
-        await sendSMS(phonenumber, `Your verification code is ${verifyCode}`, 'MON EGLISE');
+        */
+
+        const emailHtml = `<h1>Hi</h1>
+        <p>Please enter the following verification code to verify this signup attempt:</p>
+        <h2>${verifyCode}</h2>
+        <p>Don't recognize this signup attempt?</p>
+        <p>Regards,<br>The Monegliseci Team</p>`;
+
+        await resend.emails.send({
+          subject: "Sign up to your monegliseci.com account",
+          from: '"Monegliseci Team" <no-reply@monegliseci.com>',
+        });
+        to: useremail,
+        console.log('Verification email sent.');
+        html: emailHtml,
+
+        //await sendSMS(phonenumber, `Your verification code is ${verifyCode}`, 'MON EGLISE');
 
         res.status(201).json({ message: 'VerifyResent', token: token });
     } catch (error) {
@@ -391,7 +428,7 @@ async resendVerifyCode(req, res) {
         verifyCode: verifyCode
       });
 
-      
+      /*
       const transporter = nodemailer.createTransport({
         service: 'gmail',
         auth: {
@@ -413,7 +450,23 @@ async resendVerifyCode(req, res) {
     };
 
     await transporter.sendMail(mailOptions);
-    await sendSMS(phonenumber, `Your verification code is ${verifyCode} From  Tom Emmanuel`, 'MON EGLISE');
+    */
+   
+    const emailHtml = `<h1>Hi</h1>
+    <p>Please enter the following verification code to verify this signup attempt:</p>
+    <h2>${verifyCode}</h2>
+    <p>Don't recognize this signup attempt?</p>
+    <p>Regards,<br>The Monegliseci Team</p>`;
+
+    await resend.emails.send({
+      subject: "Sign up to your monegliseci.com account",
+      from: '"Monegliseci Team" <no-reply@monegliseci.com>',
+    });
+    to: useremail,
+    console.log('Verification email sent.');
+    html: emailHtml,
+
+    //await sendSMS(phonenumber, `Your verification code is ${verifyCode} From  Tom Emmanuel`, 'MON EGLISE');
    
     user.resetPasswordToken = verifyCode;
     user.resetPasswordExpires = Date.now() + 3600000; // 1 hour
@@ -573,7 +626,7 @@ async resendVerifyCode(req, res) {
     try {
       const { id_token, user } = req.body;
   
-      // Verify the ID token with Apple's public keys
+    
       const appleData = await verifyIdToken(id_token, {
         audience: process.env.APPLE_CLIENT_ID,
         ignoreExpiration: false,
@@ -581,11 +634,10 @@ async resendVerifyCode(req, res) {
   
       const email = appleData.email || user.email;
   
-      // Check if the user exists
+     
       let existingUser = await User.findOne({ userEmail: email });
   
       if (!existingUser) {
-        // If user doesn't exist, create a new one
         existingUser = await User.create({
           userName: user.name || email,
           userEmail: email,
