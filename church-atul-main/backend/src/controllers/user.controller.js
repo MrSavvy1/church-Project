@@ -377,8 +377,8 @@ async resendVerifyCode(req, res) {
             from: '"Monegliseci Team" <no-reply@monegliseci.com>', 
             to: useremail, 
             subject: "Verification Code", 
-            html: `<h1> Hi </h1>
-                   Please enter the following verification code to verify this attempt. <br/>
+            html: `<h1> Hi</h1>
+                   Please  enter the following verification code to verify this attempt. <br/>
                    <h2> ${verifyCode} </h2>
                    Don't recognize this signup attempt? 
                    Regards,
