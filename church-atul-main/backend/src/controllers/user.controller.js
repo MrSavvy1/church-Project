@@ -388,20 +388,18 @@ async resendVerifyCode(req, res) {
         await transporter.sendMail(mailOptions);
         */
 
-        const emailHtml = `<h1>Hi</h1>
-        <p>Please enter the following verification code to verify this signup attempt:</p>
-        <h2>${verifyCode}</h2>
-        <p>Don't recognize this signup attempt?</p>
-        <p>Regards,<br>The Monegliseci Team</p>`;
+        const emailHtml = `<h1>Hi </h1>
+                           <p>Please enter the following verification code to verify this signup attempt:</p>
+                           <h2>${verifyCode}</h2>
+                           <p>Don't recognize this signup attempt?</p>
+                           <p>Regards,<br>The Monegliseci Team</p>`;
 
         await resend.emails.send({
-          subject: "Sign up to your monegliseci.com account",
           from: '"Monegliseci Team" <no-reply@monegliseci.com>',
+          to: useremail,
+          subject: "Sign up to your monegliseci.com account",
+          html: emailHtml,
         });
-        to: useremail,
-        console.log('Verification email sent.');
-        html: emailHtml,
-
         //await sendSMS(phonenumber, `Your verification code is ${verifyCode}`, 'MON EGLISE');
 
         res.status(201).json({ message: 'VerifyResent', token: token });
@@ -452,20 +450,18 @@ async resendVerifyCode(req, res) {
     await transporter.sendMail(mailOptions);
     */
    
-    const emailHtml = `<h1>Hi</h1>
-    <p>Please enter the following verification code to verify this signup attempt:</p>
-    <h2>${verifyCode}</h2>
-    <p>Don't recognize this signup attempt?</p>
-    <p>Regards,<br>The Monegliseci Team</p>`;
+    const emailHtml = `<h1>Hi </h1>
+                           <p>Please enter the following verification code to verify this password change attempt:</p>
+                           <h2>${verifyCode}</h2>
+                           <p>Don't recognize this signup attempt?</p>
+                           <p>Regards,<br>The Monegliseci Team</p>`;
 
-    await resend.emails.send({
-      subject: "Sign up to your monegliseci.com account",
-      from: '"Monegliseci Team" <no-reply@monegliseci.com>',
-    });
-    to: useremail,
-    console.log('Verification email sent.');
-    html: emailHtml,
-
+        await resend.emails.send({
+          from: '"Monegliseci Team" <no-reply@monegliseci.com>',
+          to: useremail,
+          subject: "Forgot the password to your monegliseci.com account?",
+          html: emailHtml,
+        });
     //await sendSMS(phonenumber, `Your verification code is ${verifyCode} From  Tom Emmanuel`, 'MON EGLISE');
    
     user.resetPasswordToken = verifyCode;
@@ -570,7 +566,19 @@ async resendVerifyCode(req, res) {
       }
 
       const token = jwt.sign({ userId: user._id }, process.env.JWT_SECRET_KEY, { expiresIn: '6h' });
+      const emailHtml = `<h1>Hi </h1>
+                           <p>Please enter the following verification code to verify this login attempt:</p>
+                           <h2>${verifyCode}</h2>
+                           <p>Don't recognize this signup attempt?</p>
+                           <p>Regards,<br>The Monegliseci Team</p>`;
 
+        await resend.emails.send({
+          from: '"Monegliseci Team" <no-reply@monegliseci.com>',
+          to: useremail,
+          subject: "Sign up to your monegliseci.com account",
+          html: emailHtml,
+        });
+    
       res.status(200).json({ message: 'Succeed', user: user, token: token });
     } catch (error) {
       res.status(500).json({ error: 'Error', 'Server Error:': 'Failed' });
